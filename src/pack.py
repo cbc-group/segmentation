@@ -35,8 +35,14 @@ label = sitk.GetArrayFromImage(label)
 assert raw.shape == label.shape
 logger.info(f"dataset shape {raw.shape}")
 
-logger.info("writing")
-h5 = os.path.join(src_dir, "dataset.h5")
+logger.info("write training set")
+h5 = os.path.join(src_dir, "train.h5")
 with h5py.File(h5, "w") as h:
-    h["raw"] = raw
-    h["label"] = label.astype(np.uint8)
+    h["raw"] = raw[:1024, 1024:, :1024]
+    h["label"] = label.astype(np.uint8)[:1024, 1024:, :1024]
+
+logger.info("write validation set")
+h5 = os.path.join(src_dir, "val.h5")
+with h5py.File(h5, "w") as h:
+    h["raw"] = raw[:1024, 1024:, :1024]
+    h["label"] = label.astype(np.uint8)[:1024, :1024, :1024]
