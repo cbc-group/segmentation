@@ -3,10 +3,11 @@ name: segmentation
 channels:
     - defaults
     - conda-forge
+    - awolny
 
 dependencies:
     # core
-    - python=3
+    - python=3.7
 
     # linter
     - flake8
@@ -17,3 +18,7 @@ dependencies:
     # libraries from conda has mkl support
     - numpy
     - scipy
+
+    # model
+    - pytorch-3dunet
+
