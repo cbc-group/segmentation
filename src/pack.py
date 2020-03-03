@@ -20,29 +20,23 @@ coloredlogs.install(
 )
 
 src_dir = (
-    "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1"
+    "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1/bin4"
 )
 
 logger.info("load raw")
-raw = os.path.join(src_dir, "3-Pos_000_008.nrrd")
+raw = os.path.join(src_dir, "3-Pos_000_008_bin4.nrrd")
 raw = imageio.imread(raw)
 
 logger.info("load label")
-label = os.path.join(src_dir, "kidney_segmentation.nii.gz")
+label = os.path.join(src_dir, "ground_truth.nii.gz")
 label = sitk.ReadImage(label)
 label = sitk.GetArrayFromImage(label)
 
 assert raw.shape == label.shape
 logger.info(f"dataset shape {raw.shape}")
 
-logger.info("write training set")
-h5 = os.path.join(src_dir, "train.h5")
+logger.info("convert dataset format")
+h5 = os.path.join(src_dir, "converted.h5")
 with h5py.File(h5, "w") as h:
-    h["raw"] = raw[:1024, 1024:, :1024]
-    h["label"] = label.astype(np.uint8)[:1024, 1024:, :1024]
-
-logger.info("write validation set")
-h5 = os.path.join(src_dir, "val.h5")
-with h5py.File(h5, "w") as h:
-    h["raw"] = raw[:1024, 1024:, :1024]
-    h["label"] = label.astype(np.uint8)[:1024, :1024, :1024]
+    h["raw"] = raw
+    h["label"] = label.astype(np.uint8)
