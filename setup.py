@@ -14,6 +14,7 @@ setup(
     package_data={"": ["data/*"]},
     python_requires="~=3.7",
     install_requires=[
+        "click",
         "coloredlogs",
         "dask~=2.12.0",
         "distributed~=2.12.0",

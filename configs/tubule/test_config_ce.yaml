@@ -1,5 +1,5 @@
 # path to the checkpoint file containing the model
-model_path: checkpoint/best_checkpoint.pytorch
+model_path: model/best_checkpoint.pytorch
 # model configuration
 model:
   # model class

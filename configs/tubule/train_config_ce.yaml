@@ -23,7 +23,7 @@ trainer:
   # number of patches per batch
   batch_size: 1
   # path to the checkpoint directory
-  checkpoint_dir: checkpoint
+  checkpoint_dir: model
   # path to latest checkpoint; if provided the training will be resumed from that checkpoint
   resume: null
   # how many iterations between validations
