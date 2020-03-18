@@ -15,6 +15,7 @@ from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
 from utoolbox.io.dataset import open_dataset
 from typing import List
+from dask.distributed import Client
 import dask.bag as db
 
 logger = logging.getLogger(__name__)
@@ -92,6 +93,10 @@ def main(config_path, src_dir):
         level="DEBUG", fmt="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"
     )
 
+    # assume we have tunnel the scheduler to local
+    client = Client("localhost:8786")
+    print(client)
+
     # load config
     config = load_config(config_path)
 
@@ -138,6 +143,8 @@ def main(config_path, src_dir):
     if "tile_z" in src_ds.index.names:
         index = ["tile_z"] + index
     logger.info(f"a {len(index)}-D tiled dataset")
+
+    raise RuntimeError("DEBUG")
 
     tiles = groupby_tiles(src_ds, index)
     logger.info(f"{len(tiles)} to process")
