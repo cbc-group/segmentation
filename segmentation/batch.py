@@ -2,15 +2,20 @@
 Process the entire dataset.
 """
 import logging
+import os
 
 import click
 import coloredlogs
 import yaml
 
 import torch
+from pytorch3dunet.datasets.utils import get_test_loaders
+from pytorch3dunet.predict import _get_predictor
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
 from utoolbox.io.dataset import open_dataset
+from typing import List
+import dask.bag as db
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +55,34 @@ def load_config(path):
     return config
 
 
+def _get_output_file(dataset, suffix="_predictions"):
+    return f"{os.path.splitext(dataset.file_path)[0]}{suffix}.h5"
+
+
+def run(config, tiles):
+    """
+    The worker function that process the tiles.
+    """
+
+    # load model
+    model = load_model(config)
+
+    # downsample tiles and write them to scratch
+    for tid, tile in enumerate(tiles):
+        pass
+
+    # update config path
+
+    for test_loader in get_test_loaders(config):
+        logger.info(f"Processing '{test_loader.dataset.file_path}'...")
+
+        output_file = _get_output_file(test_loader.dataset)
+
+        predictor = _get_predictor(model, test_loader, output_file, config)
+        # run the model prediction on the entire dataset and save to the 'output_file' H5
+        predictor.predict()
+
+
 @click.command()
 @click.argument("config_path")
 @click.argument("src_dir")
@@ -69,10 +102,47 @@ def main(config_path, src_dir):
     )
     logger.info(f"tiling dimension ({', '.join(desc)})")
 
-    # load model
-    model = load_model(config)
+    # retrieve tiles
+    def retrieve(tile):
+        data = src_ds[tile]
 
-    
+        sampler = (slice(None, None, 4),) * 2  # TODO fixed value to 4
+        # TODO I know this is a 3D stack
+        # normally, we don't sub-sample z
+        sampler = (slice(None, None, None),) + sampler
+
+        data = data[sampler]
+
+        return data
+
+    # generate tile index list (TODO deal with multi-color/view here)
+    def groupby_tiles(inventory, index: List[str]):
+        """
+        Aggregation function that generates the proper internal list layout for all the tiles in their natural N-D layout.
+
+        Args:
+            inventory (pd.DataFrame): the listing inventory
+            index (list of str): the column header
+        """
+        tiles = []
+        for _, tile in inventory.groupby(index[0]):
+            if len(index) > 1:
+                # we are not at the fastest dimension yet, decrease 1 level
+                tiles.extend(groupby_tiles(tile, index[1:]))
+            else:
+                # fastest dimension, call retrieval function
+                tiles.append(retrieve(tile))
+        return tiles
+
+    index = ["tile_y", "tile_x"]
+    if "tile_z" in src_ds.index.names:
+        index = ["tile_z"] + index
+    logger.info(f"a {len(index)}-D tiled dataset")
+
+    tiles = groupby_tiles(src_ds, index)
+    logger.info(f"{len(tiles)} to process")
+    tiles = db.from_delayed(tiles)
+
 
 if __name__ == "__main__":
     main()
