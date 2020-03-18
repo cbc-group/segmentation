@@ -3,25 +3,22 @@ Process the entire dataset.
 """
 import logging
 import os
+from typing import List
 
 import click
 import coloredlogs
-import yaml
-
-import torch
-from pytorch3dunet.datasets.utils import get_test_loaders
-from pytorch3dunet.predict import _get_predictor
-from pytorch3dunet.unet3d import utils
-from pytorch3dunet.unet3d.model import get_model
-from utoolbox.io.dataset import open_dataset
-from typing import List
-from dask.distributed import Client
 import dask.bag as db
+from dask.distributed import Client
+
+from utoolbox.io.dataset import open_dataset
 
 logger = logging.getLogger(__name__)
 
 
 def load_model(config):
+    from pytorch3dunet.unet3d.model import get_model
+    from pytorch3dunet.unet3d import utils
+    
     # create the model
     model = get_model(config)
 
@@ -38,6 +35,9 @@ def load_model(config):
 
 
 def load_config(path):
+    import torch
+    import yaml
+
     config = yaml.safe_load(open(path, "r"))
 
     # get device to train on
@@ -60,10 +60,17 @@ def _get_output_file(dataset, suffix="_predictions"):
     return f"{os.path.splitext(dataset.file_path)[0]}{suffix}.h5"
 
 
-def run(config, tiles):
+def run(config_path, tiles):
     """
     The worker function that process the tiles.
     """
+    # delayed load
+    from pytorch3dunet.datasets.utils import get_test_loaders
+    from pytorch3dunet.predict import _get_predictor
+    
+
+    # load config
+    config = load_config(config_path)
 
     # load model
     model = load_model(config)
@@ -96,9 +103,6 @@ def main(config_path, src_dir):
     # assume we have tunnel the scheduler to local
     client = Client("localhost:8786")
     print(client)
-
-    # load config
-    config = load_config(config_path)
 
     # load dataset
     src_ds = open_dataset(src_dir)
