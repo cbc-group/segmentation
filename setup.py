@@ -12,12 +12,16 @@ setup(
     license="Apache 2.0",
     packages=find_packages(),
     package_data={"": ["data/*"]},
+    python_requires="~=3.7",
     install_requires=[
         "coloredlogs",
+        "dask~=2.12.0",
+        "distributed~=2.12.0",
         "h5py",
         "imageio",
         "numpy",
         "simpleitk",  # dependency of nibabel
+        "utoolbox>=0.6.0",
     ],
     zip_safe=True,
     extras_require={},
