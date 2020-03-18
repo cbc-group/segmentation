@@ -152,4 +152,7 @@ def main(config_path, src_dir):
 
 
 if __name__ == "__main__":
-    main()
+    main(
+        "../configs/tubule/test_config_ce.yaml",
+        "~/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1",
+    )
