@@ -22,7 +22,7 @@ setup(
         "imageio",
         "numpy",
         "simpleitk",  # dependency of nibabel
-        "utoolbox>=0.6.0",
+        "utoolbox~=0.6.0",
     ],
     zip_safe=True,
     extras_require={},

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def load_model(config):
     from pytorch3dunet.unet3d.model import get_model
     from pytorch3dunet.unet3d import utils
-    
+
     # create the model
     model = get_model(config)
 
@@ -67,7 +67,6 @@ def run(config_path, tiles):
     # delayed load
     from pytorch3dunet.datasets.utils import get_test_loaders
     from pytorch3dunet.predict import _get_predictor
-    
 
     # load config
     config = load_config(config_path)
