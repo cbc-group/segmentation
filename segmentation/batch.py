@@ -7,9 +7,9 @@ from typing import List
 
 import click
 import coloredlogs
-# import dask.bag as db
-from dask.distributed import Client
-
+import imageio
+from dask import delayed
+from dask.distributed import Client, progress
 from utoolbox.io.dataset import open_dataset
 
 logger = logging.getLogger(__name__)
@@ -110,19 +110,6 @@ def main(config_path, src_dir):
     )
     logger.info(f"tiling dimension ({', '.join(desc)})")
 
-    # retrieve tiles
-    def retrieve(tile):
-        data = src_ds[tile]
-
-        sampler = (slice(None, None, 4),) * 2  # TODO fixed value to 4
-        # TODO I know this is a 3D stack
-        # normally, we don't sub-sample z
-        sampler = (slice(None, None, None),) + sampler
-
-        data = data[sampler]
-
-        return data
-
     # generate tile index list (TODO deal with multi-color/view here)
     def groupby_tiles(inventory, index: List[str]):
         """
@@ -139,7 +126,7 @@ def main(config_path, src_dir):
                 tiles.extend(groupby_tiles(tile, index[1:]))
             else:
                 # fastest dimension, call retrieval function
-                tiles.append(retrieve(tile))
+                tiles.append(src_ds[tile])
         return tiles
 
     index = ["tile_y", "tile_x"]
@@ -149,14 +136,20 @@ def main(config_path, src_dir):
 
     tiles = groupby_tiles(src_ds, index)
     logger.info(f"{len(tiles)} to process")
-    
-    print(src_ds.chunks)
 
-    raise RuntimeError("DEBUG")
+    # downsample
+    tiles_bin4 = [tile[:, ::2, ::2] for tile in tiles]
 
-    #tiles = db.from_delayed(tiles)
+    # write back
+    def write_back(index, tile):
+        imageio.volwrite(f"/scratch/ytliu/tile_{index:04d}.tif", tile)
+
+    lazy_write = [delayed(write_back)(i, tile) for i, tile in enumerate(tiles_bin4)]
+
+    # kick start
+    futures = client.compute(lazy_write)
+    progress(futures)
 
 
 if __name__ == "__main__":
     main()
-    
