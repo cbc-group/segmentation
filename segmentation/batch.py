@@ -7,7 +7,7 @@ from typing import List
 
 import click
 import coloredlogs
-import dask.bag as db
+# import dask.bag as db
 from dask.distributed import Client
 
 from utoolbox.io.dataset import open_dataset
@@ -149,14 +149,14 @@ def main(config_path, src_dir):
 
     tiles = groupby_tiles(src_ds, index)
     logger.info(f"{len(tiles)} to process")
+    
+    print(src_ds.chunks)
 
     raise RuntimeError("DEBUG")
 
-    tiles = db.from_delayed(tiles)
+    #tiles = db.from_delayed(tiles)
 
 
 if __name__ == "__main__":
-    main(
-        "../configs/tubule/test_config_ce.yaml",
-        "~/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1",
-    )
+    main()
+    
