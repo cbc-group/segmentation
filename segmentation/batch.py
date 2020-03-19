@@ -138,12 +138,12 @@ def main(config_path, src_dir):
     logger.info(f"{len(tiles)} to process")
 
     # downsample
-    tiles_bin4 = [tile[:, ::2, ::2] for tile in tiles]
+    tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
 
     # write back
     def write_back(index, tile):
         print(index)
-        imageio.volwrite(f"/scratch/ytliu/tile_{index:04d}.tif", tile)
+        imageio.volwrite(f"/scratch/ytliu_data/tile_{index:04d}.tif", tile)
 
     lazy_write = [delayed(write_back)(i, tile) for i, tile in enumerate(tiles_bin4)]
 
