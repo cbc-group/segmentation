@@ -142,6 +142,7 @@ def main(config_path, src_dir):
 
     # write back
     def write_back(index, tile):
+        print(index)
         imageio.volwrite(f"/scratch/ytliu/tile_{index:04d}.tif", tile)
 
     lazy_write = [delayed(write_back)(i, tile) for i, tile in enumerate(tiles_bin4)]
