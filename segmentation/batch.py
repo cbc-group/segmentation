@@ -147,10 +147,11 @@ def main(config_path, src_dir):
         index = ["tile_z"] + index
     logger.info(f"a {len(index)}-D tiled dataset")
 
-    raise RuntimeError("DEBUG")
-
     tiles = groupby_tiles(src_ds, index)
     logger.info(f"{len(tiles)} to process")
+
+    raise RuntimeError("DEBUG")
+
     tiles = db.from_delayed(tiles)
 
 
