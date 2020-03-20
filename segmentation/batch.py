@@ -112,7 +112,7 @@ def main(config_path, src_dir):
     print(client)
 
     src_dir = os.path.abspath(src_dir)
-    
+
     # load dataset
     src_ds = open_dataset(src_dir)
     desc = tuple(
@@ -147,12 +147,11 @@ def main(config_path, src_dir):
     tiles = groupby_tiles(src_ds, index)
     logger.info(f"{len(tiles)} to process")
 
-    logger.info(f"distributing source files")
-    tiles = client.scatter(tiles)
-    progress(tiles)
-
     # downsample
-    tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
+    _tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
+    logger.info(f"downsampliong source files")
+    tiles_bin4 = client.scatter(_tiles_bin4)
+    progress(_tiles_bin4)
 
     dname = os.path.basename(src_dir)
     dname = f"{dname}_bin4"
@@ -164,8 +163,8 @@ def main(config_path, src_dir):
         print(f"[{index:04d}] write back")
 
         fname = f"tile_{index:04d}.tif"
-        tmp_path = os.path.join(dst_dir, fname)
-        imageio.volwrite(tmp_path, tile)
+        path = os.path.join(dst_dir, fname)
+        imageio.volwrite(path, tile)
 
     lazy_write = [delayed(write_back)(i, tile) for i, tile in enumerate(tiles_bin4)]
 
