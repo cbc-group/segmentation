@@ -109,7 +109,7 @@ def main(config_path, src_dir):
     )
 
     # assume we have tunnel the scheduler to local
-    client = Client("localhost:8786")
+    client = Client("localhost:8786", timeout=None)
     print(client)
 
     src_dir = os.path.abspath(src_dir)
@@ -157,6 +157,8 @@ def main(config_path, src_dir):
     create_dir(dst_dir)
 
     # write back
+    futures = [delayed(imageio.volwrite)() for i, tile in enumerate(tiles_bin4)]
+
     def write_back(index, tile):
         print(f"[{index:04d}] write back")
 
@@ -166,13 +168,16 @@ def main(config_path, src_dir):
 
         return fname
 
-    futures = []
+    write_back_tasks = []
     for i, tile in enumerate(tiles_bin4):
-        future = client.submit(write_back, i, tile, pure=False)
+        fname = f"tile_{index:04d}.tif"
+        path = os.path.join(dst_dir, fname)
+        future = delayed(imageio.volwrite)(path, tile)
         futures.append(future)
+    write_back_tasks = client.compute(futures, scheduler="processes")
 
-    with tqdm(total=len(futures)) as pbar:
-        for future in as_completed(futures):
+    with tqdm(total=len(write_back_tasks)) as pbar:
+        for future in as_completed(write_back_tasks):
             print(future.result())
             pbar.update(1)
 
