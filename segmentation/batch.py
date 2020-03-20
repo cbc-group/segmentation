@@ -162,7 +162,7 @@ def main(config_path, src_dir):
 
         fname = f"tile_{index:04d}.tif"
         path = os.path.join(dst_dir, fname)
-        delayed(imageio.volwrite)(path, tile)
+        imageio.volwrite(path, tile)
 
         return fname
 
