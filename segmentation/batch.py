@@ -148,10 +148,7 @@ def main(config_path, src_dir):
     logger.info(f"{len(tiles)} to process")
 
     # downsample
-    _tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
-    logger.info(f"downsampliong source files")
-    tiles_bin4 = client.scatter(_tiles_bin4)
-    progress(_tiles_bin4)
+    tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
 
     dname = os.path.basename(src_dir)
     dname = f"{dname}_bin4"
@@ -166,10 +163,10 @@ def main(config_path, src_dir):
         path = os.path.join(dst_dir, fname)
         imageio.volwrite(path, tile)
 
-    lazy_write = [delayed(write_back)(i, tile) for i, tile in enumerate(tiles_bin4)]
-
-    # kick start
-    futures = client.compute(lazy_write)
+    futures = []
+    for i, tile in enumerate(tiles_bin4):
+        future = client.submit(write_back, i, tile, pure=False)
+        futures.append(future)
     progress(futures)
 
 
