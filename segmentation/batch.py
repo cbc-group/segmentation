@@ -111,6 +111,8 @@ def main(config_path, src_dir):
     client = Client("localhost:8786")
     print(client)
 
+    src_dir = os.path.abspath(src_dir)
+    
     # load dataset
     src_ds = open_dataset(src_dir)
     desc = tuple(
@@ -144,6 +146,10 @@ def main(config_path, src_dir):
 
     tiles = groupby_tiles(src_ds, index)
     logger.info(f"{len(tiles)} to process")
+
+    logger.info(f"distributing source files")
+    tiles = client.scatter(tiles)
+    progress(tiles)
 
     # downsample
     tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
