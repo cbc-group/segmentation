@@ -157,20 +157,9 @@ def main(config_path, src_dir):
     create_dir(dst_dir)
 
     # write back
-    futures = [delayed(imageio.volwrite)() for i, tile in enumerate(tiles_bin4)]
-
-    def write_back(index, tile):
-        print(f"[{index:04d}] write back")
-
-        fname = f"tile_{index:04d}.tif"
-        path = os.path.join(dst_dir, fname)
-        imageio.volwrite(path, tile)
-
-        return fname
-
     write_back_tasks = []
     for i, tile in enumerate(tiles_bin4):
-        fname = f"tile_{index:04d}.tif"
+        fname = f"tile_{i:04d}.tif"
         path = os.path.join(dst_dir, fname)
         future = delayed(imageio.volwrite)(path, tile)
         futures.append(future)
