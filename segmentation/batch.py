@@ -15,6 +15,14 @@ from utoolbox.io.dataset import open_dataset
 logger = logging.getLogger(__name__)
 
 
+def create_dir(path):
+    try:
+        os.makedirs(path)
+        print(f'"{path}" created')
+    except FileExistsError:
+        print(f'"{path}" exists')
+
+
 def load_model(config):
     from pytorch3dunet.unet3d.model import get_model
     from pytorch3dunet.unet3d import utils
@@ -140,10 +148,22 @@ def main(config_path, src_dir):
     # downsample
     tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
 
+    tmp_dir = "/scratch/ytliu/_tmp"
+    create_dir(tmp_dir)
+    dst_dir = f"{src_dir}_bin4"
+    create_dir(dst_dir)
+
     # write back
     def write_back(index, tile):
-        print(index)
-        imageio.volwrite(f"/scratch/ytliu/tile_{index:04d}.tif", tile)
+        print(f"[{index:04d}] write back")
+
+        fname = f"tile_{index:04d}.tif"
+        tmp_path = os.path.join(tmp_dir, fname)
+        imageio.volwrite(tmp_path, tile)
+
+        print(f"[{index:04d}] move")
+        dst_path = os.path.join(dst_dir, fname)
+        os.rename(tmp_path, dst_path)
 
     lazy_write = [delayed(write_back)(i, tile) for i, tile in enumerate(tiles_bin4)]
 
