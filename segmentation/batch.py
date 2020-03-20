@@ -162,11 +162,11 @@ def main(config_path, src_dir):
         fname = f"tile_{i:04d}.tif"
         path = os.path.join(dst_dir, fname)
         future = delayed(imageio.volwrite)(path, tile)
-        futures.append(future)
-    write_back_tasks = client.compute(futures, scheduler="processes")
+        write_back_tasks.append(future)
+    futures = client.compute(write_back_tasks, scheduler="processes")
 
-    with tqdm(total=len(write_back_tasks)) as pbar:
-        for future in as_completed(write_back_tasks):
+    with tqdm(total=len(futures)) as pbar:
+        for future in as_completed(futures):
             print(future.result())
             pbar.update(1)
 
