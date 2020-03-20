@@ -9,8 +9,9 @@ import click
 import coloredlogs
 import imageio
 from dask import delayed
-from dask.distributed import Client, progress
+from dask.distributed import Client, progress, as_completed
 from utoolbox.io.dataset import open_dataset
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -163,11 +164,17 @@ def main(config_path, src_dir):
         path = os.path.join(dst_dir, fname)
         imageio.volwrite(path, tile)
 
+        return fname
+
     futures = []
     for i, tile in enumerate(tiles_bin4):
         future = client.submit(write_back, i, tile, pure=False)
         futures.append(future)
-    progress(futures)
+
+    with tqdm(total=len(futures)) as pbar:
+        for future in as_completed(futures):
+            print(future.result())
+            pbar.update(1)
 
 
 if __name__ == "__main__":
