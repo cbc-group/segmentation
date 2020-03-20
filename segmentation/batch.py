@@ -148,23 +148,18 @@ def main(config_path, src_dir):
     # downsample
     tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
 
-    tmp_dir = "/scratch/ytliu/_tmp"
-    dst_dir = f"{src_dir}_bin4"
-
-    lazy_create_dirs = [delayed(create_dir)(d) for d in (tmp_dir, dst_dir)]
-    client.compute(lazy_create_dirs)
+    dname = os.path.basename(src_dir)
+    dname = f"{dname}_bin4"
+    dst_dir = os.path.join(os.path.dirname(src_dir), dname)
+    create_dir(dst_dir)
 
     # write back
     def write_back(index, tile):
         print(f"[{index:04d}] write back")
 
         fname = f"tile_{index:04d}.tif"
-        tmp_path = os.path.join(tmp_dir, fname)
+        tmp_path = os.path.join(dst_dir, fname)
         imageio.volwrite(tmp_path, tile)
-
-        print(f"[{index:04d}] move")
-        dst_path = os.path.join(dst_dir, fname)
-        os.rename(tmp_path, dst_path)
 
     lazy_write = [delayed(write_back)(i, tile) for i, tile in enumerate(tiles_bin4)]
 
