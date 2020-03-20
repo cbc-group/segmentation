@@ -149,9 +149,10 @@ def main(config_path, src_dir):
     tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
 
     tmp_dir = "/scratch/ytliu/_tmp"
-    create_dir(tmp_dir)
     dst_dir = f"{src_dir}_bin4"
-    create_dir(dst_dir)
+
+    lazy_create_dirs = [delayed(create_dir)(d) for d in (tmp_dir, dst_dir)]
+    client.compute(lazy_create_dirs)
 
     # write back
     def write_back(index, tile):
