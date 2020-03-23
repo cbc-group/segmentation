@@ -46,6 +46,7 @@ def main(src_dir):
     for i, path in enumerate(files):
         fname = f"tile_{i:04d}.h5"
         path = os.path.join(dst_dir, fname)
+        print(path)
         data = delayed(imageio.volread)(path)
         future = pack_arrays(path, data)
         write_back_tasks.append(future)
