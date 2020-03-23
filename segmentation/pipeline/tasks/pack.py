@@ -49,7 +49,7 @@ def main(src_dir):
         fname = f"tile_{i:04d}.h5"
         dst_path = os.path.join(dst_dir, fname)
         future = pack_arrays(dst_path, data)
-        
+
         write_back_tasks.append(future)
 
     # submit task
