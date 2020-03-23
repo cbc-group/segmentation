@@ -4,7 +4,7 @@ Minimal setup.py to simplify project setup.
 from setuptools import find_packages, setup
 
 setup(
-    name="stitching",
+    name="segmentation",
     version="0.1",
     description="",
     author="Liu, Yen-Ting",
