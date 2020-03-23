@@ -43,12 +43,13 @@ def main(src_dir):
 
     # write back
     write_back_tasks = []
-    for i, path in enumerate(files):
+    for i, src_path in enumerate(files):
+        data = delayed(imageio.volread)(src_path)
+
         fname = f"tile_{i:04d}.h5"
-        path = os.path.join(dst_dir, fname)
-        print(path)
-        data = delayed(imageio.volread)(path)
-        future = pack_arrays(path, data)
+        dst_path = os.path.join(dst_dir, fname)
+        future = pack_arrays(dst_path, data)
+        
         write_back_tasks.append(future)
 
     # submit task
