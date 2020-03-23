@@ -7,9 +7,10 @@ import os
 
 import click
 import coloredlogs
-import dask.bag as db
 import yaml
-from dask.distributed import Client, progress
+from dask import delayed
+from dask.distributed import Client, as_completed
+from tqdm import tqdm
 
 import torch
 from pytorch3dunet.datasets.utils import get_test_loaders
@@ -61,13 +62,14 @@ def _get_output_file(dataset, suffix="_predictions"):
     return f"{os.path.splitext(dataset.file_path)[0]}{suffix}.h5"
 
 
-def run(paths, config_path):
+@delayed
+def run(config_path, paths):
     """
     The worker function that process the tiles.
 
     Args:
-        paths (Iterator)
         config_path (str) 
+        paths (Iterator)
     """
     # load config
     config = load_config(config_path)
@@ -78,6 +80,7 @@ def run(paths, config_path):
     # update config path
     config["loaders"]["test"]["file_paths"] = paths
 
+    output_paths = []
     for test_loader in get_test_loaders(config):
         logger.info(f"Processing '{test_loader.dataset.file_path}'...")
 
@@ -87,7 +90,9 @@ def run(paths, config_path):
         # run the model prediction on the entire dataset and save to the 'output_file' H5
         predictor.predict()
 
-        yield output_file
+        output_paths.append(output_file)
+
+    return output_paths
 
 
 @click.command()
@@ -110,11 +115,16 @@ def main(config_path, src_dir):
     files = glob.glob(os.path.join(src_dir, "*.h5"))
     logger.info(f"{len(files)} tile(s) to convert")
 
-    files = db.from_sequence(files, npartitions=5)  # number of gpus
-    output_paths = files.map_partitions(run, config_path=config_path)
+    # split into chunks
+    output_paths = []
+    n = 5  # number of gpus
+    for i in range(0, len(files), n):
+        future = run(config_path, files[i : i + n])
+        output_paths.append(future)
     futures = client.compute(output_paths, scheduler="processes")
-
-    progress(futures)
+    with tqdm(total=len(futures)) as pbar:
+        for future in as_completed(futures):
+            pbar.update(1)
 
     logger.info("closing scheduler connection")
     client.close()
