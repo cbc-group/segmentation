@@ -66,7 +66,6 @@ def main(src_dir):
     tiles = groupby_tiles(src_ds, index)
     logger.info(f"{len(tiles)} to process")
 
-    tiles = [tiles[0]]
     tiles_bin4 = [downsample_naive(tile, 4) for tile in tiles]
 
     dname = os.path.basename(src_dir)

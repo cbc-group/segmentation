@@ -31,6 +31,8 @@ def main(src_dir):
     client = Client(scheduler, timeout="300s")  # 5 min
     print(client)
 
+    src_dir = os.path.abspath(src_dir)
+
     files = glob.glob(os.path.join(src_dir, "*.tif"))
     logger.info(f"{len(files)} tile(s) to convert")
 
