@@ -109,7 +109,9 @@ def main(config_path, src_dir):
     )
 
     # assume we have tunnel the scheduler to local
-    client = Client("localhost:8786", timeout=None)
+    scheduler = "localhost:8786"
+    logger.info(f'connecting to scheduler at "{scheduler}"')
+    client = Client(scheduler, timeout=None)
     print(client)
 
     src_dir = os.path.abspath(src_dir)
@@ -170,6 +172,11 @@ def main(config_path, src_dir):
         for future in as_completed(futures):
             print(future.result())
             pbar.update(1)
+
+    # NOTE timeout has to have a number (in this case, default to 5min), otherwise,
+    # no_default triggered causing TyperError
+    logger.info("closing scheduler connection")
+    client.close(timeout=300)
 
 
 if __name__ == "__main__":
