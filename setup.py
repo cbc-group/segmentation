@@ -26,5 +26,10 @@ setup(
     ],
     zip_safe=True,
     extras_require={},
-    entry_points={"console_scripts": []},
+    entry_points={
+        "console_scripts": [
+            "bin4=segmentation.pipeline.tasks.bin4:main",
+            "pack=segmentation.pipeline.tasks.pack:main",
+        ]
+    },
 )
