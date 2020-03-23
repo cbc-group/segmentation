@@ -152,7 +152,6 @@ def main(config_path, src_dir):
 
     # downsample
     tiles_bin4 = [tile[:, ::4, ::4] for tile in tiles]
-    tiles_bin4 = [tiles_bin4[128]]  # DEBUG
 
     dname = os.path.basename(src_dir)
     dname = f"{dname}_bin4"
