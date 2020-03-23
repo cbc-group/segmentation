@@ -4,25 +4,18 @@ Process the entire dataset.
 import glob
 import logging
 import os
-from typing import List
 
 import click
 import coloredlogs
-import imageio
+import dask.bag as db
 import yaml
-from dask import delayed
-from dask.distributed import Client, as_completed
-from tqdm import tqdm
-from utoolbox.io.dataset import open_dataset
+from dask.distributed import Client, progress
 
 import torch
 from pytorch3dunet.datasets.utils import get_test_loaders
 from pytorch3dunet.predict import _get_predictor
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
-import dask.bag as db
-
-from .utils import create_dir
 
 __all__ = ["main"]
 
@@ -121,9 +114,7 @@ def main(config_path, src_dir):
     output_paths = files.map_partitions(run, config_path=config_path)
     futures = client.compute(output_paths, scheduler="processes")
 
-    with tqdm(total=len(futures)) as pbar:
-        for future in as_completed(futures):
-            pbar.update(1)
+    progress(futures)
 
     logger.info("closing scheduler connection")
     client.close()
