@@ -84,8 +84,16 @@ def main(src_dir):
     # submit task
     futures = client.compute(write_back_tasks, scheduler="processes")
     with tqdm(total=len(futures)) as pbar:
-        for future in as_completed(futures):
-            pbar.update(1)
+        for future in as_completed(futures, with_results=False):
+            try:
+                uri = future.result()
+                uri = os.path.basename(uri)
+
+                pbar.set_description(uri)
+                pbar.update(1)
+            except Exception as error:
+                logger.exception(error)
+            future.release()
 
     logger.info("closing scheduler connection")
     client.close()
