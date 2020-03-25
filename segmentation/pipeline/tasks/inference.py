@@ -62,7 +62,6 @@ def _get_output_file(dataset, suffix="_predictions"):
     return f"{os.path.splitext(dataset.file_path)[0]}{suffix}.h5"
 
 
-@delayed
 def run(config_path, paths):
     """
     The worker function that process the tiles.
@@ -116,15 +115,21 @@ def main(config_path, src_dir):
     logger.info(f"{len(files)} tile(s) to convert")
 
     # split into chunks
-    output_paths = []
+    futures = []
     n = 5  # number of gpus
-    for i in range(0, len(files), n):
-        future = run(config_path, files[i : i + n])
-        output_paths.append(future)
-    futures = client.compute(output_paths, scheduler="processes")
+    for i in range(0, n):
+        future = client.submit(run, config_path, files[i::n])
+        futures.append(future)
+
+    # wait tasks
     with tqdm(total=len(futures)) as pbar:
         for future in as_completed(futures):
-            pbar.update(1)
+            try:
+                future.result()  # ensure we do not have an exception
+                pbar.update(1)
+            except Exception as error:
+                logger.exception(error)
+            future.release()
 
     logger.info("closing scheduler connection")
     client.close()
