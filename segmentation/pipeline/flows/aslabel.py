@@ -41,7 +41,7 @@ def main(src_dir):
     dst_dir = os.path.join(os.path.dirname(src_dir), dname)
     create_dir(dst_dir)
 
-    with tqdm(total=len(futures)) as pbar:
+    with tqdm(total=len(files)) as pbar:
         for f in files:
             probabilities = read_h5(f, "predictions")
 
