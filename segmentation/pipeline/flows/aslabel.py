@@ -41,23 +41,32 @@ def main(src_dir):
     dst_dir = os.path.join(os.path.dirname(src_dir), dname)
     create_dir(dst_dir)
 
-    with tqdm(total=len(files)) as pbar:
-        for f in files:
-            probabilities = read_h5(f, "predictions")
+    futures = []
+    for f in files:
+        probabilities = read_h5(f, "predictions")
 
-            label = as_label(probabilities, dtype=np.uint16)
+        label = as_label(probabilities, dtype=np.uint16)
 
-            fname = os.path.basename(f)
-            fname, _ = os.path.splitext(fname)
-            fname = f"{fname}.tif"
-            dst_path = os.path.join(dst_dir, fname)
-            dst_path = write_tiff(dst_path, label)
+        fname = os.path.basename(f)
+        fname, _ = os.path.splitext(fname)
+        fname = f"{fname}.tif"
+        dst_path = os.path.join(dst_dir, fname)
+        dst_path = write_tiff(dst_path, label)
 
-            pbar.set_description(fname)
-            dst_path = dst_path.compute()
-            pbar.update(1)
+        future = client.compute(dst_path)
+        
+        futures.append(future)
 
-            del dst_path
+    with tqdm(total=len(futures)) as pbar:
+        for future in as_completed(futures):
+            try:
+                dst_path = future.result()
+                pbar.set_description(dst_path)
+            except Exception as error:
+                logger.exception(error)
+            finally:
+                pbar.update(1)
+                del future
 
     logger.info("closing scheduler connection")
     client.close()
