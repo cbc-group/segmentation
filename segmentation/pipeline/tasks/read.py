@@ -7,4 +7,6 @@ def read_h5(h5_path, internal_path="/"):
     import h5py
 
     with h5py.File(h5_path, "r") as h:
-        return da.from_array(h[internal_path])
+        data = h[internal_path]
+        print(f'{h5_path}, {data.shape}')
+        return da.from_array(data)
