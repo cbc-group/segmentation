@@ -5,12 +5,10 @@ import os
 import click
 import coloredlogs
 import numpy as np
-import SimpleITK as sitk
 from dask.distributed import Client
+from prefect import Flow, Parameter
 from prefect.engine.executors import DaskExecutor
 from tqdm import tqdm
-
-from perfect import Flow, Parameter, unmapped
 
 from ..tasks import as_label, read_h5, write_tiff
 from .utils import create_dir
@@ -65,10 +63,12 @@ def main(src_dir):
         tiff_path = os.path.join(dst_dir, fname)
         write_tiff(tiff_path, label)
 
+    executor = DaskExecutor(address=client.scheduler.address)
+
     with tqdm(total=len(files)) as pbar:
         for f in files:
             pbar.set_description(os.pathy.basename(f))
-            flow.run(parameters={"h5_path": f})
+            flow.run(parameters={"h5_path": f}, executor=executor)
             pbar.update(1)
 
     logger.info("closing scheduler connection")
