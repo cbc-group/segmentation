@@ -29,10 +29,10 @@ setup(
     extras_require={},
     entry_points={
         "console_scripts": [
-            "bin4=segmentation.pipeline.tasks.bin4:main",
-            "pack=segmentation.pipeline.tasks.pack:main",
-            "inference=segmentation.pipeline.tasks.inference:main",
-            "aslabel=segmentation.pipeline.tasks.aslabel:main",
+            "bin4=segmentation.pipeline.flows.bin4:main",
+            "pack=segmentation.pipeline.flows.pack:main",
+            "inference=segmentation.pipeline.flows.inference:main",
+            "aslabel=segmentation.pipeline.flows.aslabel:main",
         ]
     },
 )
