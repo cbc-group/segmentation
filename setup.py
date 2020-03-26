@@ -21,6 +21,7 @@ setup(
         "h5py",
         "imageio",
         "numpy",
+        "prefect",
         "simpleitk",  # dependency of nibabel
         "utoolbox~=0.6.0",
     ],
