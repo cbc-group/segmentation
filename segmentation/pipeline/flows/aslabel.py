@@ -55,7 +55,7 @@ def main(src_dir):
 
         futures.append(future)
 
-    futures = client.submit(futures)
+    futures = client.compute(futures)
     with tqdm(total=len(futures)) as pbar:
         for future in as_completed(futures):
             try:
