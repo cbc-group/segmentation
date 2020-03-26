@@ -73,7 +73,7 @@ def main(src_dir):
 
     with tqdm(total=len(files)) as pbar:
         for f in files:
-            pbar.set_description(os.pathy.basename(f))
+            pbar.set_description(os.path.basename(f))
             flow.run(parameters={"h5_path": f, 'dst_dir': dst_dir}, executor=executor)
             pbar.update(1)
 
