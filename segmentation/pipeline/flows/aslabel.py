@@ -6,7 +6,7 @@ import click
 import coloredlogs
 import numpy as np
 from dask.distributed import Client
-from prefect import Flow, Parameter
+from prefect import Flow, Parameter, task
 from prefect.engine.executors import DaskExecutor
 from tqdm import tqdm
 

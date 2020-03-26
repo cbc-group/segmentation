@@ -32,6 +32,7 @@ setup(
             "bin4=segmentation.pipeline.tasks.bin4:main",
             "pack=segmentation.pipeline.tasks.pack:main",
             "inference=segmentation.pipeline.tasks.inference:main",
+            "aslabel=segmentation.pipeline.tasks.aslabel:main",
         ]
     },
 )
