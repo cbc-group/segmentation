@@ -26,10 +26,10 @@ def write_tiff(uri, data):
         raise
 
     if data.ndim == 2:
-        func = imageio.imwrite)
+        func = imageio.imwrite
     else:
         # n-dim requires volwrite (or mvolwrite?)
-        func = imageio.volwrite)
+        func = imageio.volwrite
     return func(uri, data)
 
 
