@@ -5,7 +5,7 @@ import os
 import click
 import coloredlogs
 import numpy as np
-from dask.distributed import Client
+from dask.distributed import Client, as_completed
 from tqdm import tqdm
 
 from ..tasks import as_label, read_h5, write_tiff
@@ -55,8 +55,9 @@ def main(src_dir):
 
         futures.append(future)
 
+    futures = client.submit(futures)
     with tqdm(total=len(futures)) as pbar:
-        for future in futures:
+        for future in as_completed(futures):
             try:
                 future.result()
             except Exception as error:
