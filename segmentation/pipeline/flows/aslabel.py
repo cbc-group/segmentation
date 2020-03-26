@@ -54,7 +54,7 @@ def main(src_dir):
         dst_path = write_tiff(dst_path, label)
 
         future = client.compute(dst_path)
-        
+
         futures.append(future)
 
     with tqdm(total=len(futures)) as pbar:
