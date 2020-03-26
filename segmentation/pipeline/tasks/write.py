@@ -8,6 +8,7 @@ import logging
 logger = logging.getLogger("segmentation.pipeline.tasks")
 
 
+@delayed
 def write_tiff(uri, data):
     """
     Write TIFF.
@@ -25,8 +26,9 @@ def write_tiff(uri, data):
         logger.error('requires "imageio"')
         raise
 
-    return delayed(imageio.volwrite)(uri, data)
-
+    imageio.volwrite(uri, data)
+    
+    return uri
 
 @delayed
 def write_nifti(uri: str, data):
