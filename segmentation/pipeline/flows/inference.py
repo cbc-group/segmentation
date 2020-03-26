@@ -20,7 +20,7 @@ from pytorch3dunet.unet3d.model import get_model
 
 __all__ = ["main"]
 
-logger = logging.getLogger("segmentation.pipeline.tasks")
+logger = logging.getLogger("segmentation.pipeline.flows")
 
 
 def load_model(config):

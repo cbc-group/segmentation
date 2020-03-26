@@ -3,7 +3,7 @@ import logging
 
 __all__ = ["create_dir"]
 
-logger = logging.getLogger("segmentation.pipeline.tasks")
+logger = logging.getLogger("segmentation.pipeline.flows")
 
 
 def create_dir(path):

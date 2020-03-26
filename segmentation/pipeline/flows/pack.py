@@ -4,38 +4,17 @@ import os
 
 import click
 import coloredlogs
-import h5py
 import imageio
-import numpy as np
-import SimpleITK as sitk
 from dask import delayed
 from dask.distributed import Client, as_completed
 from tqdm import tqdm
 
-from ..steps import pack_arrays
+from ..tasks import pack_arrays
 from .utils import create_dir
 
 __all__ = ["main"]
 
-logger = logging.getLogger("segmentation.pipeline.tasks")
-
-
-@delayed
-def run(h5_path, dst_dir):
-    print("load probability map")
-    with h5py.File(h5_path, "r") as h:
-        predictions = np.array(h["predictions"])
-
-    labels = np.argmax(predictions[1:, ...], axis=0)
-    labels = labels.astype(np.uint16) + 1  # match raw data data type
-
-    labels = sitk.GetImageFromArray(labels)
-    base_path = h5_path.rsplit("_", 1)
-    tiff_path = base_path[0] + "_labels.tif"
-    path = os.path.join(dst_dir, tiff_path)
-    sitk.WriteImage(labels, path)
-
-    return os.path.basename(tiff_path)
+logger = logging.getLogger("segmentation.pipeline.flows")
 
 
 @click.command()
@@ -58,15 +37,14 @@ def main(src_dir):
     logger.info(f"{len(files)} tile(s) to convert")
 
     dname = os.path.basename(src_dir)
-    dname = dname.rsplit('_', 1)[0]
-    dname = f"{dname}_labels"
+    dname = f"{dname}_h5"
     dst_dir = os.path.join(os.path.dirname(src_dir), dname)
     create_dir(dst_dir)
 
     # write back
     write_back_tasks = []
-    for src_path in enumerate(files):
-        path = client.submit(run, src_path, dst_dir)
+    for i, src_path in enumerate(files):
+        data = delayed(imageio.volread)(src_path)
 
         fname = f"tile_{i:04d}.h5"
         dst_path = os.path.join(dst_dir, fname)

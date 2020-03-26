@@ -8,12 +8,12 @@ from dask.distributed import Client, as_completed
 from tqdm import tqdm
 from utoolbox.io.dataset import open_dataset
 
-from ..steps import downsample_naive, write_tiff
+from ..tasks import downsample_naive, write_tiff
 from .utils import create_dir
 
 __all__ = ["main"]
 
-logger = logging.getLogger("segmentation.pipeline.tasks")
+logger = logging.getLogger("segmentation.pipeline.flows")
 
 
 @click.command()
