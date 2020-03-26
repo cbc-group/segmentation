@@ -6,8 +6,6 @@ import click
 import coloredlogs
 import numpy as np
 from dask.distributed import Client
-from prefect import Flow, Parameter, task
-from prefect.engine.executors import DaskExecutor
 from tqdm import tqdm
 
 from ..tasks import as_label, read_h5, write_tiff
@@ -16,21 +14,6 @@ from .utils import create_dir
 __all__ = ["main"]
 
 logger = logging.getLogger("segmentation.pipeline.flows")
-
-
-@task
-def get_predictions(src_dir):
-    files = glob.glob(os.path.join(src_dir, "*_predictions.h5"))
-    logger.info(f"{len(files)} tile(s) to convert")
-    return files
-
-
-@task
-def build_dst_path(h5_path, dst_dir):
-    fname = os.path.basename(h5_path)
-    fname, _ = os.path.splitext(fname)
-    fname = f"{fname}.tif"
-    return os.path.join(dst_dir, fname)
 
 
 @click.command()
@@ -58,24 +41,29 @@ def main(src_dir):
     dst_dir = os.path.join(os.path.dirname(src_dir), dname)
     create_dir(dst_dir)
 
-    with Flow("as_label") as flow:
-        h5_path = Parameter("h5_path")
-        dst_dir = Parameter("dst_dir")
-
-        probabilities = read_h5(h5_path, "predictions")
+    futures = []
+    for f in files:
+        probabilities = read_h5(f, "predictions")
 
         label = as_label(probabilities, dtype=np.uint16)
 
-        tiff_path = build_dst_path(h5_path, dst_dir)
-        write_tiff(tiff_path, label)
+        fname = os.path.basename(f)
+        fname, _ = os.path.splitext(fname)
+        fname = f"{fname}.tif"
+        tiff_path = os.path.join(dst_dir, fname)
+        future = write_tiff(tiff_path, label)
 
-    executor = DaskExecutor(address=client.scheduler.address)
+        futures.append(future)
 
-    with tqdm(total=len(files)) as pbar:
-        for f in files:
-            pbar.set_description(os.path.basename(f))
-            flow.run(parameters={"h5_path": f, 'dst_dir': dst_dir}, executor=executor)
-            pbar.update(1)
+    with tqdm(total=len(futures)) as pbar:
+        for future in futures:
+            try:
+                future.result()
+            except Exception as error:
+                logger.exception(error)
+            finally:
+                pbar.update(1)
+                del future
 
     logger.info("closing scheduler connection")
     client.close()

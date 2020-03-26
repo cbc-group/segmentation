@@ -2,12 +2,12 @@
 This module includes functions that stands at the last step of the pipeline, which 
 concludes the computation with a single, unified product.
 """
-from prefect import task
+from dask import delayed
 import logging
 
 logger = logging.getLogger("segmentation.pipeline.tasks")
 
-@task
+
 def write_tiff(uri, data):
     """
     Write TIFF.
@@ -30,10 +30,10 @@ def write_tiff(uri, data):
     else:
         # n-dim requires volwrite (or mvolwrite?)
         func = imageio.volwrite
-    return func(uri, data)
+    return delayed(func)(uri, data)
 
 
-@task
+@delayed
 def write_nifti(uri: str, data):
     try:
         import SimpleITK as sitk

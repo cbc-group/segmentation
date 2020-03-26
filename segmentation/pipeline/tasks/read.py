@@ -1,8 +1,8 @@
-from prefect import task
+from dask import delayed
 import numpy as np
 
 
-@task
+@delayed
 def read_h5(h5_path, internal_path="/"):
     import h5py
 
