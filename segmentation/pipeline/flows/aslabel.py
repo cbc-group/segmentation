@@ -41,7 +41,7 @@ def main(src_dir):
     dst_dir = os.path.join(os.path.dirname(src_dir), dname)
     create_dir(dst_dir)
 
-    results = []
+    futures = []
     for f in files:
         probabilities = read_h5(f, "predictions")
 
@@ -51,11 +51,12 @@ def main(src_dir):
         fname, _ = os.path.splitext(fname)
         fname = f"{fname}.tif"
         dst_path = os.path.join(dst_dir, fname)
-        dst_path_ = write_tiff(dst_path, label)
+        dst_path = write_tiff(dst_path, label)
 
-        results.append(dst_path_)
+        future = client.compute(dst_path)
 
-    futures = client.compute(results)
+        futures.append(future)
+
     with tqdm(total=len(futures)) as pbar:
         for future in as_completed(futures):
             try:
