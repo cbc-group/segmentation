@@ -25,12 +25,7 @@ def write_tiff(uri, data):
         logger.error('requires "imageio"')
         raise
 
-    if data.ndim == 2:
-        func = imageio.imwrite
-    else:
-        # n-dim requires volwrite (or mvolwrite?)
-        func = imageio.volwrite
-    return delayed(func)(uri, data)
+    return delayed(imageio.volwrite)(uri, data)
 
 
 @delayed
