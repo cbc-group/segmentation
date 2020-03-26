@@ -25,6 +25,14 @@ def get_predictions(src_dir):
     return files
 
 
+@task
+def build_dst_path(h5_path, dst_dir):
+    fname = os.path.basename(h5_path)
+    fname, _ = os.path.splitext(fname)
+    fname = f"{fname}.tif"
+    return os.path.join(dst_dir, fname)
+
+
 @click.command()
 @click.argument("src_dir", type=click.Path(file_okay=False, dir_okay=True, exists=True))
 def main(src_dir):
@@ -52,15 +60,13 @@ def main(src_dir):
 
     with Flow("as_label") as flow:
         h5_path = Parameter("h5_path")
+        dst_dir = Parameter("dst_dir")
 
         probabilities = read_h5(h5_path, "predictions")
 
         label = as_label(probabilities, dtype=np.uint16)
 
-        fname = os.path.basename(h5_path)
-        fname, _ = os.path.splitext(fname)
-        fname = f"{fname}.tif"
-        tiff_path = os.path.join(dst_dir, fname)
+        tiff_path = build_dst_path(h5_path, dst_dir)
         write_tiff(tiff_path, label)
 
     executor = DaskExecutor(address=client.scheduler.address)
@@ -68,7 +74,7 @@ def main(src_dir):
     with tqdm(total=len(files)) as pbar:
         for f in files:
             pbar.set_description(os.pathy.basename(f))
-            flow.run(parameters={"h5_path": f}, executor=executor)
+            flow.run(parameters={"h5_path": f, 'dst_dir': dst_dir}, executor=executor)
             pbar.update(1)
 
     logger.info("closing scheduler connection")
