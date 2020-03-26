@@ -16,4 +16,5 @@ def as_label(probability, axis=0, dtype=np.uint8):
         axis (int, optional): the axis to caclulate the index
     """
     labels = probability[1:, ...].argmax(axis=axis)
-    return labels.astype(dtype) + 1
+    labels = labels.astype(dtype) + 1
+    return labels.compute()
