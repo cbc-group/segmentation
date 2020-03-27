@@ -20,8 +20,7 @@ def find_src_files(src_dir):
 
 
 @task
-def build_h5_dst_dir(src_dir):
-    dst_dir = f"{src_dir}_h5"
+def create_h5_dst_dir(dst_dir):
     try:
         os.makedirs(dst_dir)
     except FileExistsError:
@@ -40,13 +39,15 @@ def build_h5_path(dst_dir, tiff_path):
 def main():
     with Flow("inference") as flow:
         src_dir = Parameter("src_dir")
+        dst_dir = Parameter("dst_dir")
+
         tiff_paths = find_src_files(src_dir)
 
         logger.info("loading raw data")
         raw_data = read_tiff.map(tiff_paths)
 
         logger.info("create dst_dir")
-        dst_dir = build_h5_dst_dir(src_dir)
+        create_h5_dst_dir(dst_dir)
 
         logger.info("dumping to hdf5")
         h5_paths, path = (
@@ -62,6 +63,7 @@ def main():
 
     flow.run(
         src_dir="/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4",
+        dst_dir="/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4_h5",
         executor=executor,
     )
 

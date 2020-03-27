@@ -38,11 +38,9 @@ def write_nifti(uri: str, data):
 
 
 @task
-def write_h5(uri, path, data, overwrite=True):
-    import h5py
+def write_h5(uri, path, data):
+    import dask.array as da
 
-    mode = "w" if overwrite else "x"
-    with h5py.File(uri, mode) as h:
-        h[path] = data
+    da.to_hdf5(uri, path, data)
 
     return uri
