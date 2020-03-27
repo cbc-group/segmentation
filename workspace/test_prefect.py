@@ -27,24 +27,28 @@ def build_h5_path(tiff_path):
     return os.path.join(src_dir, fname)
 
 
-with Flow("inference") as flow:
-    src_dir = Parameter("src_dir")
-    tiff_paths = find_src_files(src_dir)
+def main():
+    with Flow("inference") as flow:
+        src_dir = Parameter("src_dir")
+        tiff_paths = find_src_files(src_dir)
 
-    logger.info("loading raw data")
-    raw_data = read_tiff.maps(tiff_paths)
+        logger.info("loading raw data")
+        raw_data = read_tiff.maps(tiff_paths)
 
-    logger.info("dumping to hdf5")
-    h5_paths, path = build_h5_path.maps(tiff_paths), Constant("raw")
-    write_h5.map(h5_paths, unmapped(path), raw_data)
+        logger.info("dumping to hdf5")
+        h5_paths, path = build_h5_path.maps(tiff_paths), Constant("raw")
+        write_h5.map(h5_paths, unmapped(path), raw_data)
 
-    logger.info("inference")
+        logger.info("inference")
+
+    client = Client("10.109.20.6:8786")
+    executor = DaskExecutor(address=client.scheduler.address)
+
+    flow.run(
+        src_dir="/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4",
+        executor=executor,
+    )
 
 
-client = Client("10.109.20.6:8786")
-executor = DaskExecutor(address=client.scheduler.address)
-
-flow.run(
-    src_dir="/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4",
-    executor=executor,
-)
+if __name__ == "__main__":
+    main()
