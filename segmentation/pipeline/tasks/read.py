@@ -4,7 +4,7 @@ import dask.array as da
 from dask.distributed import get_client
 from prefect import task
 
-__all__ = ["read_h5", "read_nifti"]
+__all__ = ["read_h5", "read_nifti", "read_tiff"]
 
 logger = logging.getLogger("segmentation.pipeline.tasks")
 

@@ -15,12 +15,14 @@ logger = logging.getLogger("segmentation.workspace")
 @task
 def find_src_files(src_dir):
     tiff_paths = glob.glob(os.path.join(src_dir, "*.tif"))
+    logger.info(f"found {len(tiff_paths)} files")
     return tiff_paths
 
 
 @task
 def build_h5_path(tiff_path):
     src_dir, fname = os.path.split(tiff_path)
+    print(src_dir)
     src_dir = f"{src_dir}_h5"
     fname, _ = os.path.splitext(fname)
     fname = f"{fname}.h5"
@@ -33,10 +35,10 @@ def main():
         tiff_paths = find_src_files(src_dir)
 
         logger.info("loading raw data")
-        raw_data = read_tiff.maps(tiff_paths)
+        raw_data = read_tiff.map(tiff_paths)
 
         logger.info("dumping to hdf5")
-        h5_paths, path = build_h5_path.maps(tiff_paths), Constant("raw")
+        h5_paths, path = build_h5_path.map(tiff_paths), Constant("raw")
         write_h5.map(h5_paths, unmapped(path), raw_data)
 
         logger.info("inference")

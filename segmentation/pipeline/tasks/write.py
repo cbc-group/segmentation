@@ -1,7 +1,7 @@
 import logging
 from prefect import task
 
-__all__ = ["write_tiff", "write_nifti"]
+__all__ = ["write_tiff", "write_nifti", "write_h5"]
 
 logger = logging.getLogger("segmentation.pipeline.tasks")
 
