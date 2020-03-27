@@ -43,7 +43,7 @@ def main():
 
         logger.info("inference")
 
-    client = Client("10.109.20.6:8786")
+    client = Client("localhost:8786")
     executor = DaskExecutor(address=client.scheduler.address)
 
     flow.run(
