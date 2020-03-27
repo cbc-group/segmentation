@@ -1,14 +1,12 @@
-"""
-This module includes functions that stands at the last step of the pipeline, which 
-concludes the computation with a single, unified product.
-"""
-from dask import delayed
 import logging
+from prefect import task
+
+__all__ = ["write_tiff", "write_nifti"]
 
 logger = logging.getLogger("segmentation.pipeline.tasks")
 
 
-@delayed
+@task
 def write_tiff(uri, data):
     """
     Write TIFF.
@@ -20,25 +18,31 @@ def write_tiff(uri, data):
     Returns:
         (Future)
     """
-    try:
-        import imageio
-    except ImportError:
-        logger.error('requires "imageio"')
-        raise
+    import imageio
 
     imageio.volwrite(uri, data)
-    
+
     return uri
 
-@delayed
+
+@task
 def write_nifti(uri: str, data):
-    try:
-        import SimpleITK as sitk
-    except ImportError:
-        logger.error('requires "SimpleITK" to write NIFTI')
-        raise
+    import SimpleITK as sitk
 
     assert uri.endswith(".nii") or uri.endswith(".nii.gz"), "not an NIFTI URI"
 
     data = sitk.GetImageFromArray(data)
     sitk.WriteImage(data, uri)
+
+    return uri
+
+
+@task
+def write_h5(uri, path, data, overwrite=True):
+    import h5py
+
+    mode = "w" if overwrite else "x"
+    with h5py.File(uri, mode) as h:
+        h[path] = data
+
+    return uri

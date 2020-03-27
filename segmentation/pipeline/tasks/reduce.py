@@ -2,12 +2,14 @@
 This module provides reduction functions for probabilities.
 """
 
-from dask import delayed
 import numpy as np
+from prefect import task
+
+__all__ = ["probabilty_to_label"]
 
 
-@delayed
-def as_label(probability, axis=0, dtype=np.uint8):
+@task
+def probabilty_to_label(probability, axis=0, dtype=np.uint8):
     """
     Convert probability array to label array by their index. First dimension is un-classified.
 
