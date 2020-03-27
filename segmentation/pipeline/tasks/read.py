@@ -2,14 +2,13 @@ import logging
 
 import dask.array as da
 from dask.distributed import get_client
-from prefect import task
+from dask import delayed
 
 __all__ = ["read_h5", "read_nifti", "read_tiff"]
 
 logger = logging.getLogger("segmentation.pipeline.tasks")
 
 
-@task
 def read_h5(uri, path="/"):
     import h5py
 
@@ -21,7 +20,6 @@ def read_h5(uri, path="/"):
     return data
 
 
-@task
 def read_nifti(uri):
     import SimpleITK as sitk
 
@@ -30,12 +28,10 @@ def read_nifti(uri):
 
     client = get_client()
     data = da.from_array(data, chunks="auto")
-    data = client.persist(data)
 
     return data
 
 
-@task
 def read_tiff(uri):
     import imageio
 
@@ -43,6 +39,5 @@ def read_tiff(uri):
 
     client = get_client()
     data = da.from_array(data, chunks="auto")
-    data = client.persist(data)
 
     return data

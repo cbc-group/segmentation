@@ -6,14 +6,13 @@ import logging
 import h5py
 import numpy as np
 from dask import delayed
-from prefect import task
 
 __all__ = ["pack_arrays", "pack_itk_snap"]
 
 logger = logging.getLogger("segmentation.pipeline.tasks")
 
 
-@task
+@delayed
 def pack_arrays(uri: str, raw, label=None, overwrite: bool = True):
     """
     Pack the array pair as an HDF5 file.
@@ -43,7 +42,7 @@ def pack_arrays(uri: str, raw, label=None, overwrite: bool = True):
 
     return uri
 
-@task
+@delayed
 def pack_itk_snap(dst_path: str, raw, label, overwrite: bool = True):
     """
     Pack raw-label product from an ITK-SNAP project.

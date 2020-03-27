@@ -1,12 +1,11 @@
 import logging
-from prefect import task
+from dask import delayed
 
-__all__ = ["write_tiff", "write_nifti", "write_h5"]
+__all__ = ["write_tiff", "write_nifti", "write_h5", "write_zarr"]
 
 logger = logging.getLogger("segmentation.pipeline.tasks")
 
 
-@task
 def write_tiff(uri, data):
     """
     Write TIFF.
@@ -20,12 +19,12 @@ def write_tiff(uri, data):
     """
     import imageio
 
+    print(f"write_back={uri}")
     imageio.volwrite(uri, data)
 
     return uri
 
 
-@task
 def write_nifti(uri: str, data):
     import SimpleITK as sitk
 
@@ -37,19 +36,27 @@ def write_nifti(uri: str, data):
     return uri
 
 
-@task
+def write_zarr(uri, path, data):
+    import dask.array as da
+
+    da.to_zarr(data, uri, path)
+
+    return uri
+
+
 def write_h5(uri, path, data):
     import h5py
-    from dask.array import store
+    import dask.array as da
 
-    # NOTE 
+    # NOTE
     # This failed to work, causing h5py cannot be pickled error.
     #   can't pickle local object when doing a to_hdf5 when using dask.distributed
     #   https://github.com/dask/distributed/issues/927
-    # da.to_hdf5(uri, path, data)
+    da.to_hdf5(uri, path, data)
 
-    with h5py.File(uri, "w") as h:
-        dst = h.create_dataset(path, shape=data.shape, dtype=data.dtype)
-        store(data, dst)
+    # logger.info(f"uri={uri}, path={path}, data={data.shape},{data.dtype}")
+    # with h5py.File(uri, "w") as h5:
+    #    dst = h5.create_dataset(path, shape=data.shape, dtype=data.dtype)
+    #    store(data, dst)
 
     return uri
