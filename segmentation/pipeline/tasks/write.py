@@ -39,8 +39,14 @@ def write_nifti(uri: str, data):
 
 @task
 def write_h5(uri, path, data):
-    import dask.array as da
+    import h5py
+    from dask.array import store
 
-    da.to_hdf5(uri, path, data)
+    # NOTE this failed to work, causing h5py cannot be pickled error
+    # da.to_hdf5(uri, path, data)
+
+    with h5py.File(uri, "w") as h:
+        dst = h.create_dataset(path, shape=data.shape, dtype=data.dtype)
+        store(data, dst)
 
     return uri
