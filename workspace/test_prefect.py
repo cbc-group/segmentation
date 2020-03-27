@@ -1,7 +1,10 @@
-import logging
 import glob
+import logging
 import os
+
+from dask.distributed import Client
 from prefect import Flow, Parameter, task, unmapped
+from prefect.engine.executors import DaskExecutor
 from prefect.tasks.core.constants import Constant
 
 from segmentation.pipeline.tasks import read_tiff, write_h5
@@ -38,6 +41,10 @@ with Flow("inference") as flow:
     logger.info("inference")
 
 
+client = Client("10.109.20.6:8786")
+executor = DaskExecutor(address=client.scheduler.address)
+
 flow.run(
-    src_dir="/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4"
+    src_dir="/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4",
+    executor=executor,
 )
