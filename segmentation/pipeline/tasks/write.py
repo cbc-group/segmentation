@@ -42,7 +42,10 @@ def write_h5(uri, path, data):
     import h5py
     from dask.array import store
 
-    # NOTE this failed to work, causing h5py cannot be pickled error
+    # NOTE 
+    # This failed to work, causing h5py cannot be pickled error.
+    #   can't pickle local object when doing a to_hdf5 when using dask.distributed
+    #   https://github.com/dask/distributed/issues/927
     # da.to_hdf5(uri, path, data)
 
     with h5py.File(uri, "w") as h:
