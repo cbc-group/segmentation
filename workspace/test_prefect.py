@@ -20,13 +20,21 @@ def find_src_files(src_dir):
 
 
 @task
-def build_h5_path(tiff_path):
-    src_dir, fname = os.path.split(tiff_path)
-    print(src_dir)
-    src_dir = f"{src_dir}_h5"
+def build_h5_dst_dir(src_dir):
+    dst_dir = f"{src_dir}_h5"
+    try:
+        os.makedirs(dst_dir)
+    except FileExistsError:
+        logger.warning(f'"{dst_dir}" already exists')
+    return dst_dir
+
+
+@task
+def build_h5_path(dst_dir, tiff_path):
+    fname = os.path.basename(tiff_path)
     fname, _ = os.path.splitext(fname)
     fname = f"{fname}.h5"
-    return os.path.join(src_dir, fname)
+    return os.path.join(dst_dir, fname)
 
 
 def main():
@@ -37,11 +45,21 @@ def main():
         logger.info("loading raw data")
         raw_data = read_tiff.map(tiff_paths)
 
+        logger.info("create dst_dir")
+        dst_dir = build_h5_dst_dir(src_dir)
+
         logger.info("dumping to hdf5")
-        h5_paths, path = build_h5_path.map(tiff_paths), Constant("raw")
+        h5_paths, path = (
+            build_h5_path.map(unmapped(dst_dir), tiff_paths),
+            Constant("raw"),
+        )
         write_h5.map(h5_paths, unmapped(path), raw_data)
 
         logger.info("inference")
+
+    flow.visualize()
+
+    raise RuntimeError("DEBUG")
 
     client = Client("localhost:8786")
     executor = DaskExecutor(address=client.scheduler.address)
