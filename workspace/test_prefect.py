@@ -67,4 +67,11 @@ def main():
 
 
 if __name__ == "__main__":
+    import coloredlogs
+
+    logging.getLogger("tifffile").setLevel(logging.ERROR)
+    coloredlogs.install(
+        level="DEBUG", fmt="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"
+    )
+
     main()
