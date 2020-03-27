@@ -57,10 +57,6 @@ def main():
 
         logger.info("inference")
 
-    flow.visualize()
-
-    raise RuntimeError("DEBUG")
-
     client = Client("localhost:8786")
     executor = DaskExecutor(address=client.scheduler.address)
 
