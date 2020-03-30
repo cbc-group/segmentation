@@ -22,7 +22,6 @@ def find_src_files(src_dir, file_ext):
     logger.info(f'search at "{search_at}"')
 
     tiff_paths = glob.glob(search_at)
-    tiff_paths = tiff_paths[:5] # DEBUG
     logger.info(f"found {len(tiff_paths)} files")
 
     return db.from_sequence(tiff_paths, partition_size=5)
@@ -51,7 +50,6 @@ def build_h5_path(dst_dir, zarr_path):
     return _build_path(dst_dir, zarr_path, "h5")
 
 
-@delayed
 def convert_hdf5(zarr_src, h5_dst):
     source = zarr.open(zarr_src, "r")
 
@@ -77,7 +75,9 @@ def run(src_dir, dst_dir):
     # logger.info("downsampling")
     # progress(bin4_data)
 
-    bin4_data = client.persist(raw_data, priority=-10)  # DEBUG bypass
+    logger.info("persist data on cluster")
+    bin4_data = client.persist(raw_data, priority=-10)
+    progress(bin4_data)
 
     # save intermediate result
     zarr_paths = tiff_paths.map(partial(build_zarr_path, dst_dir))
@@ -95,16 +95,16 @@ def run(src_dir, dst_dir):
 
     logger.info("convert zarr to h5")
     future = client.compute(futures, priority=20)
-    wait(future)
+    progress(future)
 
 
 def main():
-    client = Client("localhost:8786")
-    # client = Client(n_workers=2, threads_per_worker=2)
+    # client = Client("localhost:8786")
+    client = Client(n_workers=4, threads_per_worker=4)
 
-    root = "/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_process"
+    root = "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4"
     run(
-        src_dir=os.path.join(root, "bin4_tif"), dst_dir=os.path.join(root, "bin4_h5"),
+        src_dir=os.path.join(root, "raw"), dst_dir=os.path.join(root, "bin4_h5"),
     )
 
     client.close()

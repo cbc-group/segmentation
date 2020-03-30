@@ -39,9 +39,9 @@ def write_nifti(uri: str, data):
 def write_zarr(uri, data, path="/"):
     import dask.array as da
 
-    future = da.to_zarr(data, uri, component=path, overwrite=True, compute=False)
+    da.to_zarr(data, uri, component=path, overwrite=True)
 
-    return future
+    return uri
 
 
 def write_h5(uri, path, data):
