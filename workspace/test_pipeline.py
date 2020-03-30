@@ -5,6 +5,7 @@ import sys
 from functools import partial
 from itertools import repeat
 
+from dask import delayed
 import dask.bag as db
 import dask.array as da
 import h5py
@@ -49,6 +50,7 @@ def build_h5_path(dst_dir, zarr_path):
     return _build_path(dst_dir, zarr_path, "h5")
 
 
+@delayed
 def convert_hdf5(zarr_src, h5_dst):
     source = zarr.open(zarr_src, "r")
 
@@ -83,7 +85,7 @@ def run(src_dir, dst_dir):
 
     logger.info("save as zarr")
     future = client.compute(futures, priority=10)
-    wait(future)
+    progress(future)
 
     # convert to h5 for ingestion
     h5_paths = zarr_paths.map(partial(build_h5_path, dst_dir))
