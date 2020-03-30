@@ -22,6 +22,7 @@ def find_src_files(src_dir, file_ext):
     logger.info(f'search at "{search_at}"')
 
     tiff_paths = glob.glob(search_at)
+    tiff_paths = tiff_paths[:5] # DEBUG
     logger.info(f"found {len(tiff_paths)} files")
 
     return db.from_sequence(tiff_paths, partition_size=5)
