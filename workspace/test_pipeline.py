@@ -74,15 +74,17 @@ def run(src_dir, dst_dir):
     # logger.info("downsampling")
     # progress(bin4_data)
 
-    bin4_data = raw_data  # DEBUG bypass
+    bin4_data = client.persist(raw_data)  # DEBUG bypass
 
     # save intermediate result
     zarr_paths = tiff_paths.map(partial(build_zarr_path, dst_dir))
-    name_data = db.from_sequence(zip(zarr_paths, repeat("raw"), bin4_data))
-    futures = name_data.starmap(write_zarr)
+    name_data = db.zip(zarr_paths, bin4_data)
+    futures = name_data.starmap(partial(write_zarr, path="raw"))
 
     logger.info("save as zarr")
     progress(client.compute(futures))
+
+    del bin4_data
 
     # convert to h5 for ingestion
     h5_paths = zarr_paths.map(partial(build_h5_path, dst_dir))
