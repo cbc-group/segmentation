@@ -9,7 +9,7 @@ import dask.bag as db
 import dask.array as da
 import h5py
 import zarr
-from dask.distributed import Client, get_client, progress
+from dask.distributed import Client, get_client, progress, wait
 
 from segmentation.pipeline.tasks import read_tiff, write_zarr, downsample_naive
 
@@ -23,7 +23,7 @@ def find_src_files(src_dir, file_ext):
     tiff_paths = glob.glob(search_at)
     logger.info(f"found {len(tiff_paths)} files")
 
-    return db.from_sequence(tiff_paths)
+    return db.from_sequence(tiff_paths, partition_size=5)
 
 
 def create_dst_dir(dst_dir):
@@ -82,7 +82,8 @@ def run(src_dir, dst_dir):
     futures = name_data.starmap(write_zarr, path="raw")
 
     logger.info("save as zarr")
-    progress(client.compute(futures, priority=10))
+    future = client.compute(futures, priority=10)
+    wait(future)
 
     # convert to h5 for ingestion
     h5_paths = zarr_paths.map(partial(build_h5_path, dst_dir))
@@ -90,7 +91,8 @@ def run(src_dir, dst_dir):
     futures = src_dst.starmap(convert_hdf5)
 
     logger.info("convert zarr to h5")
-    progress(client.compute(futures, priority=20))
+    future = client.compute(futures, priority=20)
+    wait(future)
 
 
 def main():
