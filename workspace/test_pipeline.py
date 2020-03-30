@@ -88,7 +88,7 @@ def run(src_dir, dst_dir):
 
     # convert to h5 for ingestion
     h5_paths = zarr_paths.map(partial(build_h5_path, dst_dir))
-    src_dst = db.from_sequence(zip(zarr_paths, h5_paths))
+    src_dst = db.zip(zarr_paths, h5_paths)
     futures = src_dst.starmap(convert_hdf5)
 
     logger.info("convert zarr to h5")

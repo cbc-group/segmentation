@@ -36,7 +36,7 @@ def write_nifti(uri: str, data):
     return uri
 
 
-def write_zarr(uri, path, data):
+def write_zarr(uri, data, path="/"):
     import dask.array as da
 
     da.to_zarr(data, uri, path)
