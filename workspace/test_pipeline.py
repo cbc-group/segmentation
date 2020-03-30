@@ -84,8 +84,6 @@ def run(src_dir, dst_dir):
     logger.info("save as zarr")
     progress(client.compute(futures, priority=10))
 
-    del bin4_data
-
     # convert to h5 for ingestion
     h5_paths = zarr_paths.map(partial(build_h5_path, dst_dir))
     src_dst = db.zip(zarr_paths, h5_paths)
