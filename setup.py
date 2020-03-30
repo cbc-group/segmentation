@@ -24,6 +24,7 @@ setup(
         "prefect",
         "simpleitk",  # dependency of nibabel
         "utoolbox~=0.6.0",
+        "zarr",
     ],
     zip_safe=True,
     extras_require={},
