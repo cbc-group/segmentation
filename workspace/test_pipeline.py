@@ -79,7 +79,7 @@ def run(src_dir, dst_dir):
     # save intermediate result
     zarr_paths = tiff_paths.map(partial(build_zarr_path, dst_dir))
     name_data = db.zip(zarr_paths, bin4_data)
-    futures = name_data.starmap(partial(write_zarr, path="raw"))
+    futures = name_data.starmap(write_zarr, path="raw")
 
     logger.info("save as zarr")
     progress(client.compute(futures, priority=10))
