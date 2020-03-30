@@ -67,13 +67,15 @@ def run(src_dir, dst_dir):
     # create destination
     create_dst_dir(dst_dir)
 
-    # downsample
-    bin4_data = raw_data.map(partial(downsample_naive, ratio=(1, 4, 4)))
-    bin4_data = bin4_data.map(da.rechunk)
-    bin4_data = client.persist(bin4_data)
+    # # downsample
+    # bin4_data = raw_data.map(partial(downsample_naive, ratio=(1, 4, 4)))
+    # bin4_data = bin4_data.map(da.rechunk)
+    # bin4_data = client.persist(bin4_data)
+    #
+    # logger.info("downsampling")
+    # progress(bin4_data)
 
-    logger.info("downsampling")
-    progress(bin4_data)
+    bin4_data = raw_data  # DEBUG bypass
 
     # save intermediate result
     zarr_paths = tiff_paths.map(partial(build_zarr_path, dst_dir))
@@ -93,12 +95,12 @@ def run(src_dir, dst_dir):
 
 
 def main():
-    # client = Client("localhost:8786")
-    client = Client(n_workers=2, threads_per_worker=2)
+    client = Client("localhost:8786")
+    # client = Client(n_workers=2, threads_per_worker=2)
 
+    root = "/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_process"
     run(
-        src_dir="u:/andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4/raw",
-        dst_dir="u:/andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4/h5",
+        src_dir=os.path.join(root, "bin4_tif"), dst_dir=os.path.join(root, "bin4_h5"),
     )
 
     client.close()
