@@ -74,7 +74,7 @@ def run(src_dir, dst_dir):
     # logger.info("downsampling")
     # progress(bin4_data)
 
-    bin4_data = client.persist(raw_data)  # DEBUG bypass
+    bin4_data = client.persist(raw_data, priority=-10)  # DEBUG bypass
 
     # save intermediate result
     zarr_paths = tiff_paths.map(partial(build_zarr_path, dst_dir))
@@ -82,7 +82,7 @@ def run(src_dir, dst_dir):
     futures = name_data.starmap(partial(write_zarr, path="raw"))
 
     logger.info("save as zarr")
-    progress(client.compute(futures))
+    progress(client.compute(futures, priority=10))
 
     del bin4_data
 
