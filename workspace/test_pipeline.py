@@ -90,7 +90,7 @@ def run(src_dir, dst_dir):
     futures = src_dst.starmap(convert_hdf5)
 
     logger.info("convert zarr to h5")
-    progress(client.compute(futures))
+    progress(client.compute(futures, priority=20))
 
 
 def main():
