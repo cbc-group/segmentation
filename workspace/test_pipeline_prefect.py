@@ -78,7 +78,7 @@ def zarr_to_h5(zarr_path, h5_path):
         zarr.copy_all(source, dest, log=sys.stdout, if_exists="replace")
 
 
-def run(src_dir, dst_dir, debug=True):
+def run(src_dir, dst_dir, debug=False):
     src_dir = Parameter("src_dir", src_dir)
 
     # create destination
