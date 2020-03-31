@@ -2,20 +2,16 @@ import glob
 import logging
 import os
 import sys
-from functools import partial
-from itertools import repeat
 
-from dask import delayed
-import dask.bag as db
 import dask.array as da
 import h5py
-import zarr
-from dask.distributed import Client, get_client, progress, wait
-import prefect
-from prefect.engine.executors import DaskExecutor
-from prefect import Parameter, Flow, task, unmapped
 import imageio
-import dask.array as da
+import prefect
+import zarr
+from dask import delayed
+from dask.distributed import Client, get_client
+from prefect import Flow, Parameter, task, unmapped
+from prefect.engine.executors import DaskExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -112,12 +108,13 @@ def run(src_dir, dst_dir, debug=True):
 
 
 def main():
-    # client = Client("localhost:8786")
-    client = Client(n_workers=4, threads_per_worker=4)
+    client = Client("localhost:8786")
+    # client = Client(n_workers=4, threads_per_worker=4)
 
-    root = "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4"
+    # root = "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4"
+    root = "/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_process"
     run(
-        src_dir=os.path.join(root, "raw"), dst_dir=os.path.join(root, "bin4_h5"),
+        src_dir=os.path.join(root, "raw"), dst_dir=os.path.join(root, "h5"),
     )
 
     client.close()
