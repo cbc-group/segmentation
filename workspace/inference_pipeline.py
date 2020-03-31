@@ -49,7 +49,10 @@ def preload_array_info(paths: List[str]):
 
 
 @task
-def partition_path_list(paths: List[str], n_partition: int):
+def partition_path_list(paths: List[str], partition_size: int):
+    n_partition = len(paths) // partition_size
+    prefect.context.logger.info(f"partition into {n_partition} blocks")
+
     parted = []
     for i in range(0, n_partition):
         parted.append(paths[i::n_partition])
@@ -150,7 +153,7 @@ def zarr_to_h5(zarr_path, h5_path):
         zarr.copy_all(source, dest, log=sys.stdout, if_exists="replace")
 
 
-def run(src_dir, dst_dir, config_path: str, n_workers=1, debug=False):
+def run(src_dir, dst_dir, config_path: str, debug=False):
     src_dir = Parameter("src_dir", src_dir)
 
     # create destination
@@ -159,12 +162,11 @@ def run(src_dir, dst_dir, config_path: str, n_workers=1, debug=False):
 
     # number of workers
     config_path = Parameter("config_path", config_path)
-    n_workers = Parameter("n_workers", n_workers)
 
     with Flow("inference_pipeline") as flow:
         # list tiles
         tiff_paths = find_src_files(src_dir, "h5")
-        parted_tiff_paths = partition_path_list(tiff_paths, n_workers)
+        parted_tiff_paths = partition_path_list(tiff_paths, 5)
 
         prob_paths = infer.map(
             parted_tiff_paths, unmapped(config_path), unmapped(dst_dir)
@@ -190,7 +192,6 @@ def main():
         src_dir=os.path.join(root, "h5"),
         dst_dir=os.path.join(root, "prob_map"),
         config_path="/home/ytliu/segmentation/configs/tubule/test_config_ce.yaml",
-        n_workers=4,
     )
 
     client.close()
