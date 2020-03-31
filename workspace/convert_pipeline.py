@@ -89,7 +89,7 @@ def run(src_dir, dst_dir, debug=False):
     create_dir(dst_dir)
     dst_dir = Parameter("dst_dir", dst_dir)
 
-    with Flow("test_pipeline") as flow:
+    with Flow("convert_pipeline") as flow:
         # load data
         tiff_paths = find_src_files(src_dir, "tif")
         info = preload_array_info(tiff_paths)
