@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import sys
+from typing import List
 
 import dask.array as da
 import h5py
@@ -21,23 +22,27 @@ def find_src_files(src_dir, file_ext: str = "*"):
     search_at = os.path.join(src_dir, f"*.{file_ext}")
     logger.info(f'search at "{search_at}"')
 
-    tiff_paths = glob.glob(search_at)
+    tiff_paths = glob.glob(search_at)[:5]
     logger.info(f"found {len(tiff_paths)} files")
 
     return tiff_paths
 
 
 @task
-def read_tiff(tiff_path):
-    try:
-        shape, dtype = prefect.context["shape"], prefect.context["dtype"]
-    except KeyError:
-        logger = prefect.context.logger
-        logger.info("preloading shape and dtype")
+def preload_array_info(paths: List[str]):
+    assert len(paths) > 0, "no reference file exist"
 
-        data = imageio.volread(tiff_path)
-        shape, dtype = data.shape, data.dtype
-        prefect.context["shape"], prefect.context["dtype"] = shape, dtype
+    data = imageio.volread(paths[0])
+    shape, dtype = data.shape, data.dtype
+    prefect.context.logger.info(f"preload array {shape}, {dtype}")
+
+    prefect.context["shape"], prefect.context["dtype"] = shape, dtype
+    return shape, dtype
+
+
+@task
+def read_tiff(tiff_path, array_info):
+    shape, dtype = array_info
 
     data = delayed(imageio.volread)(tiff_path)
     data = da.from_delayed(
@@ -87,7 +92,8 @@ def run(src_dir, dst_dir, debug=False):
     with Flow("test_pipeline") as flow:
         # load data
         tiff_paths = find_src_files(src_dir, "tif")
-        raw_data = read_tiff.map(tiff_paths)
+        info = preload_array_info(tiff_paths)
+        raw_data = read_tiff.map(tiff_paths, unmapped(info))
 
         # save as zarr for faster access
         zarr_paths = build_path.map(unmapped(dst_dir), tiff_paths, unmapped("zarr"))
@@ -107,10 +113,10 @@ def run(src_dir, dst_dir, debug=False):
 
 
 def main():
-    client = Client("localhost:8786")
     # client = Client(n_workers=4, threads_per_worker=4)
-
     # root = "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4"
+
+    client = Client("localhost:8786")
     root = "/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_process"
     run(
         src_dir=os.path.join(root, "raw"), dst_dir=os.path.join(root, "h5"),
