@@ -150,7 +150,7 @@ def zarr_to_h5(zarr_path, h5_path):
         zarr.copy_all(source, dest, log=sys.stdout, if_exists="replace")
 
 
-def run(src_dir, dst_dir, config_path: str, n_workers=1, debug=True):
+def run(src_dir, dst_dir, config_path: str, n_workers=1, debug=False):
     src_dir = Parameter("src_dir", src_dir)
 
     # create destination
@@ -172,7 +172,7 @@ def run(src_dir, dst_dir, config_path: str, n_workers=1, debug=True):
         prob_paths = combine_path_list(prob_paths)
 
     if debug:
-        flow.visualize(filename="flow.png")
+        flow.visualize(filename="flow_debug")
     else:
         client = get_client()
         executor = DaskExecutor(address=client.scheduler.address)
@@ -181,16 +181,16 @@ def run(src_dir, dst_dir, config_path: str, n_workers=1, debug=True):
 
 
 def main():
-    client = Client(n_workers=4, threads_per_worker=4)
+    # client = Client(n_workers=4, threads_per_worker=4)
     # root = "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4"
 
-    # client = Client("localhost:8786")
+    client = Client("localhost:8786")
     root = "/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_process"
     run(
         src_dir=os.path.join(root, "h5"),
         dst_dir=os.path.join(root, "prob_map"),
         config_path="../configs/tubule/test_config_ce.yaml",
-        n_workers=5,
+        n_workers=4,
     )
 
     client.close()
