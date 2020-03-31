@@ -172,7 +172,7 @@ def run(src_dir, dst_dir, config_path: str, n_workers=1, debug=True):
         prob_paths = combine_path_list(prob_paths)
 
     if debug:
-        flow.visualize("flow.png")
+        flow.visualize(filename="flow.png")
     else:
         client = get_client()
         executor = DaskExecutor(address=client.scheduler.address)
