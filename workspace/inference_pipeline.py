@@ -189,7 +189,7 @@ def main():
     run(
         src_dir=os.path.join(root, "h5"),
         dst_dir=os.path.join(root, "prob_map"),
-        config_path="../configs/tubule/test_config_ce.yaml",
+        config_path="/home/ytliu/segmentation/configs/tubule/test_config_ce.yaml",
         n_workers=4,
     )
 
