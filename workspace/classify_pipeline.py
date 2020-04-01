@@ -50,9 +50,13 @@ def preload_array_info(paths: List[str]):
 def read_prob_map(h5_path, array_info):
     shape, dtype = array_info
 
-    h5 = h5py.File(h5_path, mode="r")
-    return da.from_array(h5["predictions"])
+    logger = prefect.context.logger
 
+    try:
+        h5 = h5py.File(h5_path, mode="r")
+        return da.from_array(h5["predictions"])
+    except Exception as error:
+        logger.exception(error)
 
 def create_dir(path):
     try:
