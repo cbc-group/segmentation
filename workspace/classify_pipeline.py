@@ -1,7 +1,6 @@
 import glob
 import logging
 import os
-import sys
 from typing import List
 
 import dask.array as da
@@ -9,7 +8,6 @@ import h5py
 import imageio
 import numpy as np
 import prefect
-import zarr
 from dask import delayed
 from dask.distributed import Client, get_client
 from prefect import Flow, Parameter, task, unmapped
@@ -31,18 +29,20 @@ def find_src_files(src_dir, file_ext: str = "*"):
 
 def read_h5(h5_path):
     with h5py.File(h5_path, mode="r") as h:
-        return h["predictions"]
+        return np.array(h["predictions"])
 
 
 @task
 def preload_array_info(paths: List[str]):
     assert len(paths) > 0, "no reference file exist"
 
-    data = read_h5(paths[0])
-    shape, dtype = data.shape, data.dtype
+    with h5py.File(paths[0], mode="r") as h:
+        # NOTE `read_h5` is not used here, since we don't need to load the array to
+        # find out shape, dtype info
+        data = h["predictions"]
+        shape, dtype = data.shape, data.dtype
     prefect.context.logger.info(f"preload array {shape}, {dtype}")
 
-    prefect.context["shape"], prefect.context["dtype"] = shape, dtype
     return shape, dtype
 
 
@@ -66,9 +66,9 @@ def create_dir(path):
 
 
 @task
-def classify(data):
+def classify(data, dtype=np.uint16):
     label = data[1:, ...].argmax(axis=0)
-    return label.astype(np.uint8) + 1
+    return label.astype(dtype) + 1
 
 
 @task
@@ -81,7 +81,12 @@ def build_path(dst_dir, src_path, file_ext: str):
 
 @task
 def write_tiff(uri, data):
-    imageio.volwrite(uri, data)
+    with imageio.get_writer(uri) as writer:
+        writer.set_meta_data({"compress": 6})
+        data = data.compute()
+        for im in data:
+            writer.append_data(im)
+
     return uri
 
 
