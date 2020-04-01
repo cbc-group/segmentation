@@ -30,7 +30,7 @@ def find_src_files(src_dir, file_ext: str = "*"):
 
 
 def read_h5(h5_path):
-    with h5py.File(h5_path, mode="w") as h:
+    with h5py.File(h5_path, mode="r") as h:
         return h["predictions"]
 
 
