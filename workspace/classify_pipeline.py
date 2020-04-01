@@ -23,7 +23,7 @@ def find_src_files(src_dir, file_ext: str = "*"):
     search_at = os.path.join(src_dir, f"*.{file_ext}")
     logger.info(f'search at "{search_at}"')
 
-    tiff_paths = glob.glob(search_at)[:5]
+    tiff_paths = glob.glob(search_at)
     logger.info(f"found {len(tiff_paths)} files")
 
     return tiff_paths
@@ -38,29 +38,25 @@ def read_h5(h5_path):
 def preload_array_info(paths: List[str]):
     assert len(paths) > 0, "no reference file exist"
 
-    prefect.context.logger.info(paths[0])
-    h = h5py.File(paths[0], mode="r")
-
-    # NOTE `read_h5` is not used here, since we don't need to load the array to
-    # find out shape, dtype info
-    prefect.context.logger.info(list(h.keys()))
-    data = h["/predictions"]
-    shape, dtype = data.shape, data.dtype
+    with h5py.File(paths[0], mode="r") as h:
+        # NOTE `read_h5` is not used here, since we don't need to load the array to
+        # find out shape, dtype info
+        data = h["predictions"]
+        shape, dtype = data.shape, data.dtype
     prefect.context.logger.info(f"preload array {shape}, {dtype}")
-
-    h.close()
 
     return shape, dtype
 
 
 @task
 def read_prob_map(h5_path, array_info):
-    try:
-        shape, dtype = array_info
-        h5 = h5py.File(h5_path, mode="r")
-        return da.from_array(h5["predictions"])
-    except Exception as error:
-        prefect.context.logger.exception(error)
+    shape, dtype = array_info
+
+    data = delayed(read_h5)(h5_path)
+    data = da.from_delayed(
+        data, shape=shape, dtype=dtype, name=os.path.basename(h5_path)
+    )
+    return data
 
 
 def create_dir(path):
