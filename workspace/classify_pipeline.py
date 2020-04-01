@@ -13,11 +13,11 @@ from dask.distributed import Client, get_client
 from prefect import Flow, Parameter, task, unmapped
 from prefect.engine.executors import DaskExecutor
 
-logger = logging.getLogger(__name__)
-
 
 @task
 def find_src_files(src_dir, file_ext: str = "*"):
+    logger = prefect.context.logger
+
     search_at = os.path.join(src_dir, f"*.{file_ext}")
     logger.info(f'search at "{search_at}"')
 
