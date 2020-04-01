@@ -116,7 +116,7 @@ def main():
     # client = Client(n_workers=4, threads_per_worker=4)
     # root = "U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_bin4"
 
-    client = Client("localhost:8786")
+    client = Client(scheduler_file="/home/ytliu/scheduler.json")
     root = "/home/ytliu/data/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1_process"
     run(
         src_dir=os.path.join(root, "raw"), dst_dir=os.path.join(root, "h5"),
