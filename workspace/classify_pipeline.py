@@ -46,10 +46,11 @@ def preload_array_info(paths: List[str]):
     return shape, dtype
 
 
-@task
+@task(log_stdout=True)
 def read_prob_map(h5_path, array_info):
     shape, dtype = array_info
 
+    print(h5_path)
     with h5py.File(h5_path, mode="r") as h:
         return da.from_array(np.array(h["predictions"]))
 
