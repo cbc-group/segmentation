@@ -21,7 +21,7 @@ def find_src_files(src_dir, file_ext: str = "*"):
     search_at = os.path.join(src_dir, f"*.{file_ext}")
     logger.info(f'search at "{search_at}"')
 
-    tiff_paths = glob.glob(search_at)
+    tiff_paths = glob.glob(search_at)[:5]
     logger.info(f"found {len(tiff_paths)} files")
 
     return tiff_paths
