@@ -50,11 +50,8 @@ def preload_array_info(paths: List[str]):
 def read_prob_map(h5_path, array_info):
     shape, dtype = array_info
 
-    data = delayed(read_h5)(h5_path)
-    data = da.from_delayed(
-        data, shape=shape, dtype=dtype, name=os.path.basename(h5_path)
-    )
-    return data
+    with h5py.File(h5_path, mode="r") as h:
+        return da.from_array(h["predictions"])
 
 
 def create_dir(path):
