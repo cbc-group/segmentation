@@ -51,7 +51,7 @@ def read_prob_map(h5_path, array_info):
     shape, dtype = array_info
 
     with h5py.File(h5_path, mode="r") as h:
-        return da.from_array(h["predictions"])
+        return da.from_array(np.array(h["predictions"]))
 
 
 def create_dir(path):
