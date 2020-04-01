@@ -30,7 +30,7 @@ def find_src_files(src_dir, file_ext: str = "*"):
     logger.info(f'search at "{search_at}"')
 
     tiff_paths = glob.glob(search_at)
-    tiff_paths = [os.path.join(src_dir, f'tile_0121.{file_ext}')]
+    tiff_paths = [os.path.join(src_dir, f"tile_0121.{file_ext}")]
     logger.info(f"found {len(tiff_paths)} files")
 
     return tiff_paths
@@ -50,7 +50,7 @@ def preload_array_info(paths: List[str]):
 
 @task
 def partition_path_list(paths: List[str], partition_size: int):
-    n_partition = min(1, len(paths) // partition_size)
+    n_partition = max(1, len(paths) // partition_size)
     prefect.context.logger.info(f"partition into {n_partition} blocks")
 
     parted = []
