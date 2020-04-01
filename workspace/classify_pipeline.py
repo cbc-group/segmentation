@@ -36,13 +36,16 @@ def read_h5(h5_path):
 def preload_array_info(paths: List[str]):
     assert len(paths) > 0, "no reference file exist"
 
-    with h5py.File(paths[0], mode="r") as h:
-        # NOTE `read_h5` is not used here, since we don't need to load the array to
-        # find out shape, dtype info
-        data = h["predictions"]
-        shape, dtype = data.shape, data.dtype
+    h = h5py.File(paths[0], mode="r")
+
+    # NOTE `read_h5` is not used here, since we don't need to load the array to
+    # find out shape, dtype info
+    data = h["predictions"]
+    shape, dtype = data.shape, data.dtype
     prefect.context.logger.info(f"preload array {shape}, {dtype}")
 
+    h.close()
+    
     return shape, dtype
 
 
@@ -57,6 +60,7 @@ def read_prob_map(h5_path, array_info):
         return da.from_array(h5["predictions"])
     except Exception as error:
         logger.exception(error)
+
 
 def create_dir(path):
     try:
