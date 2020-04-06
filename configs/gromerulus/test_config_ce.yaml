@@ -1,5 +1,5 @@
 # path to the checkpoint file containing the model
-model_path: /home/ytliu/segmentation/configs/tubule/model/best_checkpoint.pytorch
+model_path: checkpoint/best_checkpoint.pytorch
 # model configuration
 model:
   # model class
@@ -7,7 +7,7 @@ model:
   # number of input channels to the model
   in_channels: 1
   # number of output channels
-  out_channels: 4
+  out_channels: 3
   # determines the order of operators in a single layer (gcr - GroupNorm+Conv3d+ReLU)
   layer_order: gcr
   # feature maps scale factor
@@ -44,9 +44,9 @@ loaders:
       # SliceBuilder class
       name: SliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [64, 128, 128]
+      patch_shape: [64, 256, 256]
       # train stride between patches
-      stride_shape: [32, 100, 100]
+      stride_shape: [64, 256, 256]
 
     transformer:
         raw:
