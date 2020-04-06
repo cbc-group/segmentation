@@ -12,7 +12,7 @@ if [ "$1" == "" ]; then
     echo "logdir not specified"
     exit 1
 fi
-LOG_DIR=$1
+CONFIG_PATH=$1
 
 NODES="g01"
 
@@ -28,12 +28,15 @@ ssh warp -t <<EOF
     qsub \
         -q gpu \
         -l nodes=${NODES}:ppn=1 \
-        -v conda_base=${conda_base},config_path=${config_path} \
+        -v conda_base=${conda_base},config_path=${CONFIG_PATH} \
         train.sh
 EOF
 
 # launch tensorboard in remote
-ssh -t warp << EOF
+LOG_DIR="$(dirname "${CONFIG_PATH}")/checkpoint"
+ssh warp -t <<EOF
+    script /dev/null
+    TERM=vt100 screen -t tensorboard bash
     tensorboard --logdir ${LOG_DIR}
 EOF
 
