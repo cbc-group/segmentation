@@ -25,7 +25,7 @@ trainer:
   # path to the checkpoint directory
   checkpoint_dir: checkpoint
   # path to latest checkpoint; if provided the training will be resumed from that checkpoint
-  resume: checkpoint
+  resume: null
   # how many iterations between validations
   validate_after_iters: 20
   # how many iterations between tensorboard logging

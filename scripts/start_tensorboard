@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# WARNING not working yet
+
 terminate_ssh() {
     echo "SIGTERM, terminating the forward tunnel"
     ssh -S tunnel.socket -O exit warp
