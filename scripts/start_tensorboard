@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+terminate_ssh() {
+    echo "SIGTERM, terminating the forward tunnel"
+    ssh -S tunnel.socket -O exit warp
+    rm -f tunnel.socket
+}
+
+trap terminate_ssh SIGTERM SIGKILL
+
+if [ "$1" == "" ]; then
+    echo "logdir not specified"
+    exit 1
+fi
+LOG_DIR=$1
+
+NODES="g01"
+
+conda_base=$(conda info --base)
+
+# submit training task
+# NOTE 
+#   - force TTY allocation for interactive mode
+#   - `script` to own the shell
+ssh warp -t <<EOF
+    script /dev/null
+    TERM=vt100 screen -t train bash
+    qsub \
+        -q gpu \
+        -l nodes=${NODES}:ppn=1 \
+        -v conda_base=${conda_base},config_path=${config_path} \
+        train.sh
+EOF
+
+# launch tensorboard in remote
+ssh -t warp << EOF
+    tensorboard --logdir ${LOG_DIR}
+EOF
+
+# port forwarding
+ssh -v -N \
+    -M -S tunnel.socket \
+    -L 6006:localhost:6006 \
+    warp
