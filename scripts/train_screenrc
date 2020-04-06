@@ -1,0 +1,18 @@
+# allow bold colors 
+attrcolor b ".I"
+
+# create top
+screen top
+
+split
+focus down
+
+# watch directory
+screen watch -n 1 ls
+
+split
+focus down
+
+# empty terminal
+screen
+focus bottom
