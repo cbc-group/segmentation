@@ -80,6 +80,12 @@ def main(src_dir, dst_dir=None, no_label=False, split_along="z"):
         pass
     logger.info(f'saving result to "{dst_dir}"')
 
+    # test set is always complete
+    logger.info(".. test set")
+    path = os.path.join(dst_dir, "test.h5")
+    with h5py.File(path, "w") as h:
+        h["raw"] = raw
+
     # DEBUG remove partial data
     raw, label = raw[:54, ...], label[:54, ...]
 
