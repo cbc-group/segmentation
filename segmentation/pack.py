@@ -85,19 +85,25 @@ def main(src_dir, dst_dir=None, no_label=False, split_along="z"):
 
     # split along depth
     axis = "zyx".index(split_along)
+    logger.info(f"split along {split_along}-axis ({axis})")
     ds = raw.shape[axis] // 2
+    sampler0 = [slice(None, None)] * 2
+    sampler1 = sampler0.copy()
+    sampler0.insert(axis, slice(None, ds))
+    sampler1.insert(axis, slice(ds, None))
+    sampler0, sampler1 = tuple(sampler0), tuple(sampler1)
 
     logger.info(".. training set")
     path = os.path.join(dst_dir, "train.h5")
     with h5py.File(path, "w") as h:
-        h["raw"] = raw[:ds, ...]
-        h["label"] = label[:ds, ...]
+        h["raw"] = raw[sampler0]
+        h["label"] = label[sampler0]
 
     logger.info(".. validation set")
     path = os.path.join(dst_dir, "val.h5")
     with h5py.File(path, "w") as h:
-        h["raw"] = raw[ds:, ...]
-        h["label"] = label[ds:, ...]
+        h["raw"] = raw[sampler1]
+        h["label"] = label[sampler1]
 
 
 if __name__ == "__main__":
@@ -108,6 +114,4 @@ if __name__ == "__main__":
         level="DEBUG", fmt="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"
     )
 
-    main(
-        src_dir="U:/Andy/20200217_K8_nkcc2_568_10x15_z5um_1/glomerulus", split_along="y"
-    )
+    main(src_dir="D:/", split_along="y")
