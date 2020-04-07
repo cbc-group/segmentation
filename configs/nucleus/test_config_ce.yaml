@@ -36,17 +36,16 @@ loaders:
     # paths to the test datasets; if a given path is a directory all H5 files ('*.h5', '*.hdf', '*.hdf5', '*.hd5')
     # inside this this directory will be included as well (non-recursively)
     file_paths:
-      # - 'data/full.h5'
-      - 'data/full_tile.h5'
+      - 'data/test.h5'
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
       # SliceBuilder class
       name: SliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [32, 128, 128]
+      patch_shape: [32, 256, 256]
       # train stride between patches
-      stride_shape: [24, 112, 112]
+      stride_shape: [24, 240, 240]
 
     transformer:
         raw:
