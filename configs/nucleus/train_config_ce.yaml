@@ -153,9 +153,9 @@ loaders:
       # SliceBuilder class
       name: SliceBuilder
       # validation patch (can be bigger than train patch since there is no backprop)
-      patch_shape: [64, 256, 256]
+      patch_shape: [32, 256, 256]
       # validation stride (validation patches doesn't need to overlap)
-      stride_shape: [32, 128, 128]
+      stride_shape: [32, 256, 256]
 
     # no data augmentation during validation
     transformer:
