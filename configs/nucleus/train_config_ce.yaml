@@ -25,7 +25,7 @@ trainer:
   # path to the checkpoint directory
   checkpoint_dir: checkpoint
   # path to latest checkpoint; if provided the training will be resumed from that checkpoint
-  resume: null
+  resume: checkpoint
   # how many iterations between validations
   validate_after_iters: 20
   # how many iterations between tensorboard logging
@@ -93,9 +93,9 @@ loaders:
       # SliceBuilder class
       name: SliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [32, 128, 128]
+      patch_shape: [32, 256, 256]
       # train stride between patches
-      stride_shape: [24, 112, 112]
+      stride_shape: [24, 240, 240]
 
     # data transformations/augmentations
     transformer:
@@ -153,9 +153,9 @@ loaders:
       # SliceBuilder class
       name: SliceBuilder
       # validation patch (can be bigger than train patch since there is no backprop)
-      patch_shape: [64, 128, 128]
+      patch_shape: [64, 256, 256]
       # validation stride (validation patches doesn't need to overlap)
-      stride_shape: [64, 128, 128]
+      stride_shape: [64, 256, 256]
 
     # no data augmentation during validation
     transformer:

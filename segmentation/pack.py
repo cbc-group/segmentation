@@ -51,12 +51,19 @@ def load_raw_data(src_dir, ext="nrrd"):
     return data
 
 
-def main(src_dir, dst_dir=None, no_label=False):
+def main(src_dir, dst_dir=None, no_label=False, split_along="z"):
     raw = load_raw_data(src_dir)
     logger.info(f"dataset shape {raw.shape}")
 
     if not no_label:
-        label = load_label(src_dir)
+        for ext in ("nii.gz", "nii"):
+            try:
+                label = load_label(src_dir, ext=ext)
+                break
+            except RuntimeError:
+                pass
+        else:
+            raise RuntimeError("unable to locate label")
         assert raw.shape == label.shape, "raw data and label should have the same shape"
 
         if label.dtype != np.uint8:
@@ -73,20 +80,30 @@ def main(src_dir, dst_dir=None, no_label=False):
         pass
     logger.info(f'saving result to "{dst_dir}"')
 
+    # DEBUG remove partial data
+    raw, label = raw[:54, ...], label[:54, ...]
+
     # split along depth
-    ds = raw.shape[0] // 2
+    axis = "zyx".index(split_along)
+    logger.info(f"split along {split_along}-axis ({axis})")
+    ds = raw.shape[axis] // 2
+    sampler0 = [slice(None, None)] * 2
+    sampler1 = sampler0.copy()
+    sampler0.insert(axis, slice(None, ds))
+    sampler1.insert(axis, slice(ds, None))
+    sampler0, sampler1 = tuple(sampler0), tuple(sampler1)
 
     logger.info(".. training set")
     path = os.path.join(dst_dir, "train.h5")
     with h5py.File(path, "w") as h:
-        h["raw"] = raw[:ds, ...]
-        h["label"] = label[:ds, ...]
+        h["raw"] = raw[sampler0]
+        h["label"] = label[sampler0]
 
     logger.info(".. validation set")
     path = os.path.join(dst_dir, "val.h5")
     with h5py.File(path, "w") as h:
-        h["raw"] = raw[ds:, ...]
-        h["label"] = label[ds:, ...]
+        h["raw"] = raw[sampler1]
+        h["label"] = label[sampler1]
 
 
 if __name__ == "__main__":
@@ -97,4 +114,4 @@ if __name__ == "__main__":
         level="DEBUG", fmt="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"
     )
 
-    main(src_dir="U:/Andy/20200217_K8_nkcc2_568_10x15_z5um_1/glomerulus")
+    main(src_dir="D:/", split_along="y")
