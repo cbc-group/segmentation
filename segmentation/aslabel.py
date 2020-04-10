@@ -16,7 +16,7 @@ coloredlogs.install(
     level="DEBUG", fmt="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"
 )
 
-h5 = "../data/tubule/full_tile_predictions.h5"
+h5 = "../workspace/test_predictions.h5"
 
 logger.info("load probability maps")
 with h5py.File(h5, "r") as h:
@@ -24,9 +24,10 @@ with h5py.File(h5, "r") as h:
 logger.info(f"found {predictions.shape[0]-1} class(es)")
 
 logger.info("apply argmax")
-labels = np.argmax(predictions[1:, ...], axis=0)  # along the classes
-labels = labels.astype(np.uint8) + 1
+label = np.argmax(predictions[1:, ...], axis=0)  # along the classes
+label = label.astype(np.uint8) + 1
 
-logger.info("load labels")
-labels = sitk.GetImageFromArray(labels)
-sitk.WriteImage(labels, "../data/tubule/full_tile_labels.tif")
+logger.info("write label")
+label = sitk.GetImageFromArray(label)
+sitk.WriteImage(label, "../workspace/ground_truth.nii.gz")
+sitk.WriteImage(label, "../workspace/ground_truth.tif")

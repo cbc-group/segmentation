@@ -80,36 +80,37 @@ def main(src_dir, dst_dir=None, no_label=False, split_along="z"):
         pass
     logger.info(f'saving result to "{dst_dir}"')
 
-    # test set is always complete
-    logger.info(".. test set")
-    path = os.path.join(dst_dir, "test.h5")
-    with h5py.File(path, "w") as h:
-        h["raw"] = raw
+    if no_label:
+        # test set is always complete
+        logger.info(".. test set")
+        path = os.path.join(dst_dir, "test.h5")
+        with h5py.File(path, "w") as h:
+            h["raw"] = raw
+    else:
+        # DEBUG remove partial data
+        # raw, label = raw[:54, ...], label[:54, ...]
 
-    # DEBUG remove partial data
-    raw, label = raw[:54, ...], label[:54, ...]
+        # split along depth
+        axis = "zyx".index(split_along)
+        logger.info(f"split along {split_along}-axis ({axis})")
+        ds = raw.shape[axis] // 2
+        sampler0 = [slice(None, None)] * 2
+        sampler1 = sampler0.copy()
+        sampler0.insert(axis, slice(None, ds))
+        sampler1.insert(axis, slice(ds, None))
+        sampler0, sampler1 = tuple(sampler0), tuple(sampler1)
 
-    # split along depth
-    axis = "zyx".index(split_along)
-    logger.info(f"split along {split_along}-axis ({axis})")
-    ds = raw.shape[axis] // 2
-    sampler0 = [slice(None, None)] * 2
-    sampler1 = sampler0.copy()
-    sampler0.insert(axis, slice(None, ds))
-    sampler1.insert(axis, slice(ds, None))
-    sampler0, sampler1 = tuple(sampler0), tuple(sampler1)
+        logger.info(".. training set")
+        path = os.path.join(dst_dir, "train.h5")
+        with h5py.File(path, "w") as h:
+            h["raw"] = raw[sampler0]
+            h["label"] = label[sampler0]
 
-    logger.info(".. training set")
-    path = os.path.join(dst_dir, "train.h5")
-    with h5py.File(path, "w") as h:
-        h["raw"] = raw[sampler0]
-        h["label"] = label[sampler0]
-
-    logger.info(".. validation set")
-    path = os.path.join(dst_dir, "val.h5")
-    with h5py.File(path, "w") as h:
-        h["raw"] = raw[sampler1]
-        h["label"] = label[sampler1]
+        logger.info(".. validation set")
+        path = os.path.join(dst_dir, "val.h5")
+        with h5py.File(path, "w") as h:
+            h["raw"] = raw[sampler1]
+            h["label"] = label[sampler1]
 
 
 if __name__ == "__main__":
@@ -120,4 +121,8 @@ if __name__ == "__main__":
         level="DEBUG", fmt="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"
     )
 
-    main(src_dir="D:/", split_along="y")
+    main(
+        src_dir="U:/Andy/20200217_K8_nkcc2_568_10x15_z5um_1/nkcc2",
+        no_label=True,
+        split_along="y",
+    )
