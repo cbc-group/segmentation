@@ -1,0 +1,6 @@
+# ignore model and logs 
+checkpoint/
+
+# ignore data folder and link
+data/
+data
