@@ -16,7 +16,7 @@ coloredlogs.install(
     level="DEBUG", fmt="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"
 )
 
-h5 = "../workspace/test_predictions.h5"
+h5 = "../configs/nucleus/data/test_predictions.h5"
 
 logger.info("load probability maps")
 with h5py.File(h5, "r") as h:
