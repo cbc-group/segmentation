@@ -88,7 +88,7 @@ def main(src_dir, dst_dir=None, no_label=False, split_along="z"):
             h["raw"] = raw
     else:
         # DEBUG remove partial data
-        # raw, label = raw[:54, ...], label[:54, ...]
+        raw, label = raw[:80, ...], label[:80, ...]
 
         # split along depth
         axis = "zyx".index(split_along)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     )
 
     main(
-        src_dir="U:/Andy/20200217_K8_nkcc2_568_10x15_z5um_1/nkcc2",
-        no_label=True,
+        src_dir="U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1/nucleus",
+        no_label=False,
         split_along="y",
     )
