@@ -17,8 +17,8 @@ coloredlogs.install(
 
 # NOTE range is [start, end)
 files = [
-    ("C:/Users/Andy/Desktop/segmentation/workspace/ground_truth.nii.gz", (57, None)),
-    ("D:/ground_truth.nii", (0, 57)),
+    ("U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1/nucleus/ground_truth.nii.gz", (81, None)),
+    ("U:/Andy/20191210_ExM_kidney_10XolympusNA06_zp3_10x14_kb_R_Nkcc2_488_slice_8_1/nucleus/ground_truth/ground_truth_20200410.nii.gz", (0, 81)),
 ]
 
 array = None
@@ -38,5 +38,5 @@ for path, (start, end) in files:
 
 logger.info("write merged label")
 label = sitk.GetImageFromArray(array)
-sitk.WriteImage(label, "../workspace/ground_truth_merged.nii.gz")
-sitk.WriteImage(label, "../workspace/ground_truth_merged.tif")
+sitk.WriteImage(label, "ground_truth_merged.nii.gz")
+sitk.WriteImage(label, "ground_truth_merged.tif")
